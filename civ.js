@@ -6,8 +6,7 @@ class Sprite {
     }
 }
 
-
-
+window.ondragstart = function() { return false; }
 
 
 function setup() {
