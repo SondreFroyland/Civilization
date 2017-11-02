@@ -1,9 +1,9 @@
-.hexagon {
+.sjø {
   position: absolute;
   width: 100px; 
   height: 57.74px;
   margin: 28.87px 0;
-  background-image: url(https://sondrefroyland.github.io/Tiles2.png);
+  background-image: url(https://raw.githubusercontent.com/SondreFroyland/Civilization/master/Sj%C3%B8.png);
   background-size: auto 115.4701px;
   background-position: center;
 }
@@ -54,7 +54,69 @@
   background-position: center bottom;
 }
 
-.hexagon:after {
+.sjø:after {
+  content: "";
+  position: absolute;
+  top: 0.0000px;
+  left: 0;
+  width: 100.0000px;
+  height: 57.7350px;
+  z-index: 2;
+  background: inherit;
+}
+
+.ørken {
+  position: absolute;
+  width: 100px; 
+  height: 57.74px;
+  margin: 28.87px 0;
+  background-image: url(https://raw.githubusercontent.com/SondreFroyland/Civilization/master/%C3%98rken.png);
+  background-size: auto 115.4701px;
+  background-position: center;
+}
+
+.ørken:after {
+  content: "";
+  position: absolute;
+  top: 0.0000px;
+  left: 0;
+  width: 100.0000px;
+  height: 57.7350px;
+  z-index: 2;
+  background: inherit;
+}
+
+.gress {
+  position: absolute;
+  width: 100px; 
+  height: 57.74px;
+  margin: 28.87px 0;
+  background-image: url(https://raw.githubusercontent.com/SondreFroyland/Civilization/master/Gress.png);
+  background-size: auto 115.4701px;
+  background-position: center;
+}
+
+.gress:after {
+  content: "";
+  position: absolute;
+  top: 0.0000px;
+  left: 0;
+  width: 100.0000px;
+  height: 57.7350px;
+  z-index: 2;
+  background: inherit;
+}
+.fjell {
+  position: absolute;
+  width: 100px; 
+  height: 57.74px;
+  margin: 28.87px 0;
+  background-image: url(https://raw.githubusercontent.com/SondreFroyland/Civilization/master/Fjell.png);
+  background-size: auto 115.4701px;
+  background-position: center;
+}
+
+.fjell:after {
   content: "";
   position: absolute;
   top: 0.0000px;

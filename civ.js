@@ -30,7 +30,7 @@ function setup() {
 
     function createTile(i, j) {
         let divHex = document.createElement("div");
-        divHex.className = "hexagon";
+        divHex.className = "sjø";
         let divHexTop = document.createElement("div");
         divHexTop.className = "hexTop";
         let divHexBot = document.createElement("div");
@@ -55,17 +55,18 @@ function setup() {
         divHex.style.top = ypos + "px";
 
         manyHex.push(hexSprite);
-        splashtiles(600, 500, 200);
-        //dette gir ikke en sirkel, men en firkant istedenfor
+        splashtiles(600, 500, 200, "gress");
+        splashtiles(-200, 700, 300, "ørken");
+        splashtiles(1200, -400, 600, "fjell");
     }
 
-    for (let i = 0; i < 15; i++) {
-        for (let j = 0; j < 12; j++) {
+    for (let i = -5; i < 11; i++) {
+        for (let j = -5; j < 20; j++) {
             createTile(i, j);
         }
     }
 
-    function splashtiles(xlocation, ylocation, radius) {
+    function splashtiles(xlocation, ylocation, radius, className) {
         //function splashtiles(xlocation, ylocation, radius, roughness, xlocation2, ylocation2) {
         /*
         beskrivelse av parametere:
@@ -85,7 +86,7 @@ function setup() {
         //add some other types of tiles, maybe this is a good way, check tiles between certain x and y coordinates and give them different style
         for (let hex of manyHex) {
             if (((hex.x + 50 - xlocation) * (hex.x + 50 - xlocation) + (hex.y + 58 - ylocation) * (hex.y + 58 - ylocation)) < (radius*radius)) {
-                hex.div.style.visibility = "hidden"; //or give another class and remove old class
+                hex.div.className = className;
             }
         }
     }
