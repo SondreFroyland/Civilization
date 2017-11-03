@@ -8,18 +8,25 @@ class Sprite {
 
 window.ondragstart = function() { return false; }
 
-
 function setup() {
+
+    let mainX = 0;
+    let mainY = 0;
+    let main = document.getElementById("main");
 
     addEventListener("mousemove", flytt);
     function flytt(e) {
         if (e.buttons === 1) {
-            for (let hex of manyHex) {
+            mainX = mainX + e.movementX;
+            mainY = mainY + e.movementY;
+            main.style.left = mainX + "px";
+            main.style.top = mainY + "px";
+            /*for (let hex of manyHex) {
                 hex.x = hex.x + e.movementX;
                 hex.y = hex.y + e.movementY;
                 hex.div.style.left = hex.x + "px";
                 hex.div.style.top = hex.y + "px";
-            }
+            }*/
         }
     }
 
@@ -59,8 +66,8 @@ function setup() {
         splashtiles(1200, -400, 600, "fjell");
     }
 
-    for (let i = -5; i < 11; i++) {
-        for (let j = -5; j < 20; j++) {
+    for (let i = -10; i < 15; i++) {
+        for (let j = -15; j < 30; j++) {
             createTile(i, j);
         }
     }

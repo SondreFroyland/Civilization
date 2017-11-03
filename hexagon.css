@@ -1,3 +1,13 @@
+body {
+  overflow: hidden;
+}
+
+#main {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
 .sjø {
   position: absolute;
   width: 100px; 
