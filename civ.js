@@ -55,19 +55,14 @@ function setup() {
         divHex.style.top = ypos + "px";
 
         manyHex.push(hexSprite);
-        splashtiles(600, 500, 200, "gress");
-        splashtiles(-200, 700, 300, "ørken");
-        splashtiles(0, 500, 200, "fjell");
-        splashtiles(1200, -400, 600, "gress");
-        splashtiles(1000, -350, 300, "fjell");
-        splashtiles(1150, -500, 200, "ørken");
     }
 
-    for (let i = -6; i < 17; i++) {
-        for (let j = -4; j < 35; j++) {
+    for (let i = -12; i < 17; i++) {
+        for (let j = -14; j < 35; j++) {
             createTile(i, j);
         }
     }
+    generateWorld();
 
     function distance(ax, ay, bx, by, xscew, yscew) {
         let dist = Math.sqrt((ax - bx + xscew) * (ax - bx + xscew) + (ay - by + yscew) * (ay - by + yscew));
@@ -91,7 +86,6 @@ function setup() {
         kan separere dette i to parametere, kan også ha splashtiles og linjesplash som to forskjellige
         funksjoner.
         */
-        //add some other types of tiles, maybe this is a good way, check tiles between certain x and y coordinates and give them different style
         for (let hex of manyHex) {
             if (distance(hex.x, hex.y, xlocation, ylocation, 50, 58) <= radius) {
                 hex.div.className = className;
@@ -110,6 +104,34 @@ function setup() {
             //to how far along the path between radi1 and radi2, for example halfway between it would have
             //the average radius.
         }
+    }
+
+    function generateWorld() {
+        for (let i = 0; i <= 20; i++) {
+            console.log(i);
+            let randTileClass = "";
+            switch (Math.floor(Math.random() * 3)) {
+                case 0:
+                    randTileClass = "gress";
+                    break;
+                case 1:
+                    randTileClass = "ørken";
+                    break;
+                case 2:
+                    randTileClass = "fjell";
+                    break;
+            }
+            let randXPos = Math.ceil(Math.random() * 3000) - 1000;
+            let randYPos = Math.ceil(Math.random() * 3000) - 1000;
+            let randRadius = Math.ceil(Math.random() * 600) + 100;
+            splashtiles(randXPos, randYPos, randRadius, randTileClass);
+        }
+        /*splashtiles(600, 500, 200, "gress");
+        splashtiles(-200, 700, 300, "ørken");
+        splashtiles(0, 500, 200, "fjell");
+        splashtiles(1200, -400, 600, "gress");
+        splashtiles(1000, -350, 300, "fjell");
+        splashtiles(1150, -500, 200, "ørken");*/
     }
 
     function gameEngine() {
