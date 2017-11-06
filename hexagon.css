@@ -2,6 +2,16 @@ body {
   overflow: hidden;
 }
 
+#border {
+  position: absolute;
+  top: 20px;
+  left: 100px;
+  border: 2px solid black;
+  width: 800px;
+  height: 550px;
+  overflow: hidden;
+}
+
 #main {
   position: absolute;
   top: 0px;
@@ -135,4 +145,8 @@ body {
   height: 57.7350px;
   z-index: 2;
   background: inherit;
+}
+
+.hidden {
+  visibility: hidden;
 }

@@ -1,34 +1,63 @@
-class Sprite {
-    constructor(div, x, y) {
-        this.div = div;
+class hexInfo {
+    constructor(x, y, hexClass) {
         this.x = x;
         this.y = y;
+        this.hexClass = hexClass;
+        this.deployed = false;
     }
 }
 
 window.ondragstart = function () { return false; }
 
-function setup() {
+let screenXPos = 0;
+let screenYPos = 0;
 
-    let mainX = 0;
-    let mainY = 0;
+function setup() {
     let main = document.getElementById("main");
 
-    addEventListener("mousemove", flytt);
+    border.addEventListener("mousemove", flytt);
     function flytt(e) {
         if (e.buttons === 1) {
-            mainX = mainX + e.movementX;
-            mainY = mainY + e.movementY;
-            main.style.left = mainX + "px";
-            main.style.top = mainY + "px";
+            screenXPos = screenXPos + e.movementX;
+            screenYPos = screenYPos + e.movementY;
+            main.style.left = screenXPos + "px";
+            main.style.top = screenYPos + "px";
+            for (let hex of manyHexInfo) {
+                if (hex.deployed) {
+                    if ((hex.x + screenXPos) < -130 || (hex.x + screenXPos) > 920 || (hex.y + screenYPos) < -140 || (hex.y + screenYPos) > 620) {
+                        for (let hexDiv of manyHexDiv) {
+                            if (parseFloat(hexDiv.style.left) === hex.x && parseFloat(hexDiv.style.top) === hex.y) {
+                                hex.deployed = false;
+                                hexDiv.remove();
+                                manyHexDiv.splice(manyHexDiv.indexOf(hexDiv), 1);
+                            }
+                        }
+                    }
+                }
+                if ((hex.x + screenXPos) > -150 && (hex.x + screenXPos) < 940 && (hex.y + screenYPos) > -160 && (hex.y + screenYPos) < 640 && !hex.deployed) {
+                    hex.deployed = true;
+                    let divHex = document.createElement("div");
+                    divHex.className = hex.hexClass;
+                    let divHexTop = document.createElement("div");
+                    divHexTop.className = "hexTop";
+                    let divHexBot = document.createElement("div");
+                    divHexBot.className = "hexBottom";
+                    main.appendChild(divHex);
+                    divHex.appendChild(divHexTop);
+                    divHex.appendChild(divHexBot);
+                    divHex.style.left = hex.x + "px";
+                    divHex.style.top = hex.y + "px";
+                    manyHexDiv.push(divHex);
+                }
+            }
         }
     }
 
-    setInterval(gameEngine, 50);
-
-    let manyHex = [];
+    let manyHexInfo = [];
+    let manyHexDiv = [];
 
     function createTile(i, j) {
+        /*
         let divHex = document.createElement("div");
         divHex.className = "sjø";
         let divHexTop = document.createElement("div");
@@ -37,7 +66,7 @@ function setup() {
         divHexBot.className = "hexBottom";
         document.getElementById("main").appendChild(divHex);
         divHex.appendChild(divHexTop);
-        divHex.appendChild(divHexBot);
+        divHex.appendChild(divHexBot); */
 
         let xpos = 0;
         let ypos = 0;
@@ -49,16 +78,13 @@ function setup() {
             xpos = j * 100 + 50;
         }
 
-        let hexSprite = new Sprite(divHex, xpos, ypos);
+        let newHexInfo = new hexInfo(xpos, ypos, "sjø");
 
-        divHex.style.left = xpos + "px";
-        divHex.style.top = ypos + "px";
-
-        manyHex.push(hexSprite);
+        manyHexInfo.push(newHexInfo);
     }
 
-    for (let i = -20; i < 30; i++) {
-        for (let j = -20; j < 35; j++) {
+    for (let i = -30; i < 40; i++) {
+        for (let j = -30; j < 40; j++) {
             createTile(i, j);
         }
     }
@@ -86,13 +112,13 @@ function setup() {
         kan separere dette i to parametere, kan også ha splashtiles og linjesplash som to forskjellige
         funksjoner.
         */
-        for (let hex of manyHex) {
+        for (let hex of manyHexInfo) {
             if (distance(hex.x, hex.y, xlocation, ylocation, 50, 58) <= radius) {
-                hex.div.className = className;
+                hex.hexClass = className;
             }
         }
     }
-    function splashline(startX, startY, endX, endY, startRadius, midRadius, endRadius, className) {
+    /*function splashline(startX, startY, endX, endY, startRadius, midRadius, endRadius, className) {
         let distance = distance(startX, startY, endX, endY, 0, 0);
         let focusX = startX;
         let focusY = startY;
@@ -104,11 +130,10 @@ function setup() {
             //to how far along the path between radi1 and radi2, for example halfway between it would have
             //the average radius.
         }
-    }
+    }*/
 
     function generateWorld() {
         for (let i = 0; i <= 30; i++) {
-            console.log(i);
             let randTileClass = "";
             switch (Math.floor(Math.random() * 4)) {
                 case 0:
@@ -128,10 +153,7 @@ function setup() {
             let randYPos = Math.ceil(Math.random() * 3000) - 1000;
             let randRadius = Math.ceil(Math.random() * 500) + 100;
             splashtiles(randXPos, randYPos, randRadius, randTileClass);
+
         }
-    }
-
-    function gameEngine() {
-
     }
 }
