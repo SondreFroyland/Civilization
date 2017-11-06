@@ -57,16 +57,6 @@ function setup() {
     let manyHexDiv = [];
 
     function createTile(i, j) {
-        /*
-        let divHex = document.createElement("div");
-        divHex.className = "sjø";
-        let divHexTop = document.createElement("div");
-        divHexTop.className = "hexTop";
-        let divHexBot = document.createElement("div");
-        divHexBot.className = "hexBottom";
-        document.getElementById("main").appendChild(divHex);
-        divHex.appendChild(divHexTop);
-        divHex.appendChild(divHexBot); */
 
         let xpos = 0;
         let ypos = 0;
@@ -79,7 +69,6 @@ function setup() {
         }
 
         let newHexInfo = new hexInfo(xpos, ypos, "sjø");
-
         manyHexInfo.push(newHexInfo);
     }
 
@@ -96,22 +85,6 @@ function setup() {
     }
 
     function splashtiles(xlocation, ylocation, radius, className) {
-        //function splashtiles(xlocation, ylocation, radius, roughness, xlocation2, ylocation2) {
-        /*
-        beskrivelse av parametere:
-        x/ylocation: xpos og ypos å sjekke rundt
-        radius: radius til sirkel rundt punktet
-        roughness: hvor jevn sirkelen skal være, roughness = 0 betyr perfekt sirkel, 
-        mens mer roughness sier hvor mye tilfeldighet det er for å sjekke om en tile er innenfor eller ikke
-        (genererer nye tall for hver tile for å sjekke om den skal være med eller ikke(dette kan 
-        lede til at det blir "øyer" som har vært heldige, mens andre tiles rundt ikke har det,
-        kanskje det finnes bedre model for dette(tenker muligens definere en sirkel med roughness,
-        så si at alle tiles innenfor sirkelen skal forandres)))
-        x/ylocation2: om en skal lage en sti, for eksempel en elv fra ett punkt til et annet
-        her vil roughnessen være et mål på hvor mye radiusen kan variere, og hvor svingete elva er.
-        kan separere dette i to parametere, kan også ha splashtiles og linjesplash som to forskjellige
-        funksjoner.
-        */
         for (let hex of manyHexInfo) {
             if (distance(hex.x, hex.y, xlocation, ylocation, 50, 58) <= radius) {
                 hex.hexClass = className;
@@ -154,6 +127,23 @@ function setup() {
             let randRadius = Math.ceil(Math.random() * 500) + 100;
             splashtiles(randXPos, randYPos, randRadius, randTileClass);
 
+        }
+        for (let hex of manyHexInfo) {
+            if ((hex.x + screenXPos) > -150 && (hex.x + screenXPos) < 940 && (hex.y + screenYPos) > -160 && (hex.y + screenYPos) < 640 && !hex.deployed) {
+                hex.deployed = true;
+                let divHex = document.createElement("div");
+                divHex.className = hex.hexClass;
+                let divHexTop = document.createElement("div");
+                divHexTop.className = "hexTop";
+                let divHexBot = document.createElement("div");
+                divHexBot.className = "hexBottom";
+                main.appendChild(divHex);
+                divHex.appendChild(divHexTop);
+                divHex.appendChild(divHexBot);
+                divHex.style.left = hex.x + "px";
+                divHex.style.top = hex.y + "px";
+                manyHexDiv.push(divHex);
+            }
         }
     }
 }
