@@ -57,8 +57,8 @@ function setup() {
         manyHex.push(hexSprite);
     }
 
-    for (let i = -12; i < 17; i++) {
-        for (let j = -14; j < 35; j++) {
+    for (let i = -20; i < 30; i++) {
+        for (let j = -20; j < 35; j++) {
             createTile(i, j);
         }
     }
@@ -107,31 +107,28 @@ function setup() {
     }
 
     function generateWorld() {
-        for (let i = 0; i <= 20; i++) {
+        for (let i = 0; i <= 30; i++) {
             console.log(i);
             let randTileClass = "";
-            switch (Math.floor(Math.random() * 3)) {
+            switch (Math.floor(Math.random() * 4)) {
                 case 0:
                     randTileClass = "gress";
                     break;
                 case 1:
-                    randTileClass = "ørken";
+                    randTileClass = "gress";
                     break;
                 case 2:
+                    randTileClass = "ørken";
+                    break;
+                case 3:
                     randTileClass = "fjell";
                     break;
             }
-            let randXPos = Math.ceil(Math.random() * 3000) - 1000;
+            let randXPos = Math.ceil(Math.random() * 4000) - 1000;
             let randYPos = Math.ceil(Math.random() * 3000) - 1000;
-            let randRadius = Math.ceil(Math.random() * 600) + 100;
+            let randRadius = Math.ceil(Math.random() * 500) + 100;
             splashtiles(randXPos, randYPos, randRadius, randTileClass);
         }
-        /*splashtiles(600, 500, 200, "gress");
-        splashtiles(-200, 700, 300, "ørken");
-        splashtiles(0, 500, 200, "fjell");
-        splashtiles(1200, -400, 600, "gress");
-        splashtiles(1000, -350, 300, "fjell");
-        splashtiles(1150, -500, 200, "ørken");*/
     }
 
     function gameEngine() {
