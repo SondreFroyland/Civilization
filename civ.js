@@ -6,7 +6,7 @@ class Sprite {
     }
 }
 
-window.ondragstart = function() { return false; }
+window.ondragstart = function () { return false; }
 
 function setup() {
 
@@ -21,12 +21,6 @@ function setup() {
             mainY = mainY + e.movementY;
             main.style.left = mainX + "px";
             main.style.top = mainY + "px";
-            /*for (let hex of manyHex) {
-                hex.x = hex.x + e.movementX;
-                hex.y = hex.y + e.movementY;
-                hex.div.style.left = hex.x + "px";
-                hex.div.style.top = hex.y + "px";
-            }*/
         }
     }
 
@@ -63,13 +57,21 @@ function setup() {
         manyHex.push(hexSprite);
         splashtiles(600, 500, 200, "gress");
         splashtiles(-200, 700, 300, "ørken");
-        splashtiles(1200, -400, 600, "fjell");
+        splashtiles(0, 500, 200, "fjell");
+        splashtiles(1200, -400, 600, "gress");
+        splashtiles(1000, -350, 300, "fjell");
+        splashtiles(1150, -500, 200, "ørken")
     }
 
-    for (let i = -10; i < 15; i++) {
-        for (let j = -15; j < 30; j++) {
+    for (let i = -6; i < 17; i++) {
+        for (let j = -4; j < 35; j++) {
             createTile(i, j);
         }
+    }
+
+    function distance(ax, ay, bx, by, xscew, yscew) {
+        let dist = Math.sqrt((ax - bx + xscew) * (ax - bx + xscew) + (ay - by + yscew) * (ay - by + yscew));
+        return dist;
     }
 
     function splashtiles(xlocation, ylocation, radius, className) {
@@ -91,9 +93,22 @@ function setup() {
         */
         //add some other types of tiles, maybe this is a good way, check tiles between certain x and y coordinates and give them different style
         for (let hex of manyHex) {
-            if (((hex.x + 50 - xlocation) * (hex.x + 50 - xlocation) + (hex.y + 58 - ylocation) * (hex.y + 58 - ylocation)) < (radius*radius)) {
+            if (distance(hex.x, hex.y, xlocation, ylocation, 50, 58) <= radius) {
                 hex.div.className = className;
             }
+        }
+    }
+    function splashline(startX, startY, endX, endY, startRadius, midRadius, endRadius, className) {
+        let distance = distance(startX, startY, endX, endY, 0, 0);
+        let focusX = startX;
+        let focusY = startY;
+        let currentRadius = startRadius;
+        for (i = 0; i < (startRadius + midRadius) / 2;) {
+            splashtiles(focusX, focusY, currentRadius, className);
+            //increase currentRadius and focusX/Y and i in some way to get smooth transition
+            //move along distance vector according to current radius, then increase radius according
+            //to how far along the path between radi1 and radi2, for example halfway between it would have
+            //the average radius.
         }
     }
 
