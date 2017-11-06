@@ -60,7 +60,7 @@ function setup() {
         splashtiles(0, 500, 200, "fjell");
         splashtiles(1200, -400, 600, "gress");
         splashtiles(1000, -350, 300, "fjell");
-        splashtiles(1150, -500, 200, "ørken")
+        splashtiles(1150, -500, 200, "ørken");
     }
 
     for (let i = -6; i < 17; i++) {
