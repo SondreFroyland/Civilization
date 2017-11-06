@@ -18,8 +18,8 @@ function setup() {
     border.addEventListener("mousemove", flytt);
     function flytt(e) {
         if (e.buttons === 1) {
-            screenXPos = screenXPos + e.movementX;
-            screenYPos = screenYPos + e.movementY;
+            screenXPos = screenXPos + 2*e.movementX;
+            screenYPos = screenYPos + 2*e.movementY;
             main.style.left = screenXPos + "px";
             main.style.top = screenYPos + "px";
             for (let hex of manyHexInfo) {
