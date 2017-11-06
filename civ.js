@@ -1,3 +1,15 @@
+/*
+How current map mechanics work:
+manyHexInfo contains information about every tile, its location, look(class) and if it is "deployed" or not.
+manyHexInfo gains its information through random "Tilesplashes".
+When a tile is deployed, its information is used to create a div, which will then have the correct look and location.
+A tile is created whenever it is on screen, and when it exits the screen it will be removed.
+This makes it so that there aren't too many elements active at one moment.
+I have no idea however, how this will work on multiplayer. It probably wont... 
+FeelsBadMan
+*/
+
+
 class hexInfo {
     constructor(x, y, hexClass) {
         this.x = x;
