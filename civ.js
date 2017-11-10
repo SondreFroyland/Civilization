@@ -40,6 +40,7 @@ class unit {
         this.type = type;
         this.player = player;
         this.id = unitid;
+        this.currentmoves = this.type.moves;
     }
 }
 
@@ -195,6 +196,14 @@ function setup() {
     let focusunit = undefined;
     let focustile = undefined;
 
+    document.getElementById("endturn").addEventListener("click", endturn);
+    function endturn() {
+        for (let n of units) {
+            //maybe check here for units that still have movement left before ending
+            n.currentmoves = n.type.moves;
+        }
+    }
+
     //kanskje legge til at du kan dra uten å fjerne selection av tiles
     //masse for loops lager mye lag, kanskje det kan kuttes ned på dem på en eller annen måte...
     //kanskje forandre måten det fungerer på delvis, skrive det igjen mer ryddig
@@ -215,15 +224,17 @@ function setup() {
                             focustile = hex;
                         }
                     }
-                    for (let i = 0; i <= n.type.moves; i++) {
-                        for (let newTile of newSearchingTiles) {
-                            if(searchingTiles.indexOf(newTile) === -1) {
-                                searchingTiles.push(newTile);
-                            }
-                        }
+                    for (let i = 1; i <= n.currentmoves; i++) {
                         for (let hex of manyHexDiv) {
                             for (let searchTile of searchingTiles) {
                                 if (distance(parseFloat(searchTile.style.left), parseFloat(searchTile.style.top), parseFloat(hex.style.left), parseFloat(hex.style.top), 0, 0) <= 100) {
+                                    for (let hexInfo of manyHexInfo) {
+                                        if (hexInfo.deployed) {
+                                            if (hexInfo.x === parseFloat(hex.style.left) && hexInfo.y === parseFloat(hex.style.top) && hexInfo.canBeWalkedBy[n.id] === undefined) {
+                                                hexInfo.canBeWalkedBy[n.id] = i;
+                                            }
+                                        }
+                                    }
                                     let canWalkOnTile = true;
                                     for (let i = 0; i < n.type.cantWalkOn.length; i++) {
                                         if (n.type.cantWalkOn[i] === hex.className) {
@@ -236,21 +247,21 @@ function setup() {
                                 }
                             }
                         }
+                        for (let newTile of newSearchingTiles) {
+                            if (searchingTiles.indexOf(newTile) === -1) {
+                                searchingTiles.push(newTile);
+                            }
+                        }
                     }
                     for (let j of searchingTiles) {
                         j.style.opacity = 0.5;
-                        for (let hex of manyHexInfo) {
-                            if (hex.x === parseFloat(j.style.left) && hex.y === parseFloat(j.style.top)) {
-                                hex.canBeWalkedBy[n.id] = true;
-                            }
-                        }
                     }
                 }
             }
         } else {
             if (focusunit != undefined) {
                 for (let hex of manyHexInfo) {
-                    hex.canBeWalkedBy[focusunit.id] = false;
+                    hex.canBeWalkedBy[focusunit.id] = undefined;
                 }
                 focusunit.div.style.opacity = 1;
                 focusunit = undefined;
@@ -271,12 +282,15 @@ function setup() {
         e.preventDefault();
         if (focusunit != undefined) {
             for (let hexClicked of manyHexInfo) {
-                if (hexClicked.deployed && hexClicked.canBeWalkedBy[focusunit.id]) {
+                if (hexClicked.deployed && hexClicked.canBeWalkedBy[focusunit.id] <= focusunit.currentmoves) {
                     if (hexClicked.x === parseFloat(div.style.left) && hexClicked.y === parseFloat(div.style.top) && !hexClicked.occupied) {
                         focusunit.x = parseFloat(div.style.left);
                         focusunit.y = parseFloat(div.style.top);
                         focusunit.div.style.left = div.style.left;
                         focusunit.div.style.top = div.style.top;
+                        //reducing currentmoves based on distance traveled
+                        focusunit.currentmoves -= hexClicked.canBeWalkedBy[focusunit.id];
+
                         for (let hex of manyHexInfo) {
                             if (distance(focusunit.x, focusunit.y, hex.x, hex.y, 0, 0) <= (focusunit.type.moves + 1) * 100) {
                                 hex.discovererd[playerid] = true;
@@ -293,10 +307,11 @@ function setup() {
                 }
             }
             for (let hex of manyHexInfo) {
-                hex.canBeWalkedBy[focusunit.id] = false;
+                hex.canBeWalkedBy[focusunit.id] = undefined;
             }
             focusunit.div.style.opacity = 1;
             focusunit = undefined;
+            focustile = undefined;
             for (let hex of manyHexDiv) { //burde gjøre slik at dette bare sjer med de tiles som faktisk var lyst opp på grunn av movement, ikke alle tiles på hele brettet
                 hex.style.opacity = 1;
             }
