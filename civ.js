@@ -15,6 +15,8 @@ How to make it more semi-random:
 
 Definere noen punkter (øyer), kaste stein rundt dette i en viss radius, disse steinene vokser til fjell,
 myr etc, og etterpå spawner players til høyre for fjell
+
+TODO: Add canvas for map display based on what hextiles are discovered
 */
 
 
@@ -25,6 +27,8 @@ class hexInfo {
         this.hexClass = hexClass;
         this.deployed = false;
         this.discovererd = []; //array containing information of what players have discovered the tile
+        this.occupied = false;
+        this.canBeWalkedBy = {};
     }
 }
 
@@ -39,7 +43,14 @@ class unit {
     }
 }
 
+/*
+Ha en tabell over unittypes, med info om hvor mange tiles de kan gå, om de kan gå over fjell/vann,
+kanskje liv, attack, defence
+*/
+
 let playerid = 0;
+
+let terrainTypes = ["gress", "gress", "gress", "ørken", "ørken", "fjell", "sjø"];
 
 window.ondragstart = function () { return false; }
 
@@ -146,51 +157,55 @@ function setup() {
     }*/
 
     function generateWorld() {
-        for (let i = 0; i <= 70; i++) {
-            let randTileClass = "";
-            switch (Math.floor(Math.random() * 4)) {
-                case 0:
-                    randTileClass = "gress";
-                    break;
-                case 1:
-                    randTileClass = "gress";
-                    break;
-                case 2:
-                    randTileClass = "ørken";
-                    break;
-                case 3:
-                    randTileClass = "fjell";
-                    break;
-            }
+        for (let i = 0; i <= 100; i++) {
+            let randTileClass = terrainTypes[Math.floor(Math.random() * terrainTypes.length)];
             let randXPos = Math.ceil(Math.random() * 4000) - 1000;
             let randYPos = Math.ceil(Math.random() * 3000) - 1000;
-            let randRadius = Math.ceil(Math.random() * 200) + 100;
+            let randRadius = Math.ceil(Math.random() * 300) + 100;
             splashtiles(randXPos, randYPos, randRadius, randTileClass);
-            //kanskje legge til mer land, også etterpå legge tilbake vann i form av elver
-
+            //kanskje legge til mer land, også etterpå legge tilbake vann i form av elver(splashlines)
         }
         for (let hex of manyHexInfo) {
-            if(distance(hex.x, hex.y, 350, 200, 0, 0) < 350) {
+            if (distance(hex.x, hex.y, 300, 172, 0, 0) <= 300) { //bør lage settler random sted først helt til den står et sted ved land, derreter fokusere dette området rundt settleren
                 hex.discovererd[playerid] = true;
             }
             createHexTiles(hex);
         }
     }
 
+    let settlerUnit = {
+        stringType: "settler",
+        moves: 2,
+        life: 100,
+        cantWalkOn: ["sjø", "fjell"]
+    }
+    let scoutUnit = {
+        stringType: "scout",
+        moves: 3,
+        life: 50,
+        cantWalkOn: ["sjø"]
+    }
+
     let unitid = 0;
     function createUnit(type, x, y, player) {
         let newUnitDiv = document.createElement("div");
         newUnitDiv.id = unitid;
-        newUnitDiv.className = type + " unit";
+        newUnitDiv.className = type.stringType + " unit";
         newUnitDiv.style.left = x + "px";
         newUnitDiv.style.top = y + "px";
         main.appendChild(newUnitDiv);
         let newUnit = new unit(newUnitDiv, x, y, type, player, unitid);
         unitid++;
         units.push(newUnit);
+        for (let hex of manyHexInfo) {
+            if (x === hex.x && y === hex.y) {
+                hex.occupied = true;
+            }
+        }
     }
 
-    let focusunit;
+    let focusunit = undefined;
+    let focustile = undefined;
     function selectUnit(e) {
         let div = e.path[0];
         if (div.classList.contains("unit")) {
@@ -198,18 +213,54 @@ function setup() {
                 if (parseFloat(div.id) === n.id) {
                     n.div.style.opacity = 0.5;
                     focusunit = n;
+                    let searchingTiles = [];
+                    let newSearchingTiles = [];
                     for (let hex of manyHexDiv) {
-                        if (distance(n.x, n.y, parseFloat(hex.style.left), parseFloat(hex.style.top), 0, 0) < 250) {
-                            hex.style.opacity = 0.5;
+                        if (n.x === parseFloat(hex.style.left) && n.y === parseFloat(hex.style.top)) {
+                            searchingTiles.push(hex);
+                            focustile = hex;
+                        }
+                    }
+                    for (let i = 0; i <= n.type.moves; i++) {
+                        for (let newTile of newSearchingTiles) {
+                            searchingTiles.push(newTile);
+                        }
+                        for (let hex of manyHexDiv) {
+                            for (let searchTile of searchingTiles) {
+                                if (distance(parseFloat(searchTile.style.left), parseFloat(searchTile.style.top), parseFloat(hex.style.left), parseFloat(hex.style.top), 0, 0) <= 100) {
+                                    let canWalkOnTile = true;
+                                    for (let i = 0; i < n.type.cantWalkOn.length; i++) {
+                                        if (n.type.cantWalkOn[i] === hex.className) {
+                                            canWalkOnTile = false;
+                                        }
+                                    }
+                                    if (searchingTiles.indexOf(hex) === -1 && canWalkOnTile) {
+                                        newSearchingTiles.push(hex);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    for (let j of searchingTiles) {
+                        j.style.opacity = 0.5;
+                        for (let hex of manyHexInfo) {
+                            if (hex.x === parseFloat(j.style.left) && hex.y === parseFloat(j.style.top)) {
+                                hex.canBeWalkedBy[n.id] = true;
+                            }
                         }
                     }
                 }
             }
         } else {
             if (focusunit != undefined) {
+                for (let hex of manyHexInfo) {
+                    hex.canBeWalkedBy[focusunit.id] = false;
+                }
                 focusunit.div.style.opacity = 1;
                 focusunit = undefined;
-                for (let hex of manyHexDiv) {
+                focustile = undefined;
+                for (let hex of manyHexDiv) { //burde gjøre slik at dette bare sjer med de tiles som faktisk var lyst opp på grunn av movement, ikke alle tiles på hele brettet
                     hex.style.opacity = 1;
                 }
             }
@@ -224,27 +275,76 @@ function setup() {
         }
         e.preventDefault();
         if (focusunit != undefined) {
-            if (distance(focusunit.x, focusunit.y, parseFloat(div.style.left), parseFloat(div.style.top), 0, 0) < 250) {
-                focusunit.x = parseFloat(div.style.left);
-                focusunit.y = parseFloat(div.style.top);
-                focusunit.div.style.left = div.style.left;
-                focusunit.div.style.top = div.style.top;
+            for (let hexClicked of manyHexInfo) {
+                if (hexClicked.deployed && hexClicked.canBeWalkedBy[focusunit.id]) {
+                    if (hexClicked.x === parseFloat(div.style.left) && hexClicked.y === parseFloat(div.style.top) && !hexClicked.occupied) {
+                        focusunit.x = parseFloat(div.style.left);
+                        focusunit.y = parseFloat(div.style.top);
+                        focusunit.div.style.left = div.style.left;
+                        focusunit.div.style.top = div.style.top;
+                        for (let hex of manyHexInfo) {
+                            if (distance(focusunit.x, focusunit.y, hex.x, hex.y, 0, 0) <= (focusunit.type.moves + 1) * 100) {
+                                hex.discovererd[playerid] = true;
+                                createHexTiles(hex);
+                            }
+                            if (hex.x === parseFloat(focustile.style.left) && hex.y === parseFloat(focustile.style.top)) {
+                                hex.occupied = false;
+                            }
+                            if (hex.x === parseFloat(div.style.left) && hex.y === parseFloat(div.style.top)) {
+                                hex.occupied = true;
+                            }
+                        }
+                    }
+                }
+            }
+            for (let hex of manyHexInfo) {
+                hex.canBeWalkedBy[focusunit.id] = false;
+            }
+            focusunit.div.style.opacity = 1;
+            focusunit = undefined;
+            for (let hex of manyHexDiv) { //burde gjøre slik at dette bare sjer med de tiles som faktisk var lyst opp på grunn av movement, ikke alle tiles på hele brettet
+                hex.style.opacity = 1;
+            }
+        }
+
+
+
+        /*if (focusunit != undefined) {
+            if (distance(focusunit.x, focusunit.y, parseFloat(div.style.left), parseFloat(div.style.top), 0, 0) <= focusunit.type.moves * 100) {
                 for (let hex of manyHexInfo) {
-                    if (distance(focusunit.x, focusunit.y, hex.x, hex.y, 0, 0) < 320) {
-                        hex.discovererd[playerid] = true;
-                        createHexTiles(hex);
+                    if (hex.x === parseFloat(div.style.left) && hex.y === parseFloat(div.style.top)) {
+                        if (!hex.occupied) {
+                            focusunit.x = parseFloat(div.style.left);
+                            focusunit.y = parseFloat(div.style.top);
+                            focusunit.div.style.left = div.style.left;
+                            focusunit.div.style.top = div.style.top;
+                            for (let hex of manyHexInfo) {
+                                if (distance(focusunit.x, focusunit.y, hex.x, hex.y, 0, 0) <= (focusunit.type.moves + 1) * 100) {
+                                    hex.discovererd[playerid] = true;
+                                    createHexTiles(hex);
+                                }
+                                if (hex.x === parseFloat(focustile.style.left) && hex.y === parseFloat(focustile.style.top)) {
+                                    hex.occupied = false;
+                                }
+                                if (hex.x === parseFloat(div.style.left) && hex.y === parseFloat(div.style.top)) {
+                                    hex.occupied = true;
+                                }
+                            }
+
+                        }
                     }
                 }
             }
 
             focusunit.div.style.opacity = 1;
             focusunit = undefined;
-            for (let hex of manyHexDiv) {
+            for (let hex of manyHexDiv) { //burde gjøre slik at dette bare sjer med de tiles som faktisk var lyst opp på grunn av movement, ikke alle tiles på hele brettet
                 hex.style.opacity = 1;
             }
-        }
+        }*/
     }
 
-    createUnit("settler", 350, 260, playerid);
+    createUnit(settlerUnit, 300, 172, playerid);
+    createUnit(scoutUnit, 400, 172, playerid);
     border.addEventListener("click", selectUnit);
 }
