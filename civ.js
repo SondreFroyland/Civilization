@@ -229,8 +229,14 @@ function setup() {
                             for (let searchTile of searchingTiles) {
                                 if (distance(parseFloat(searchTile.style.left), parseFloat(searchTile.style.top), parseFloat(hex.style.left), parseFloat(hex.style.top), 0, 0) <= 100) {
                                     for (let hexInfo of manyHexInfo) {
-                                        if (hexInfo.deployed) {
-                                            if (hexInfo.x === parseFloat(hex.style.left) && hexInfo.y === parseFloat(hex.style.top) && hexInfo.canBeWalkedBy[n.id] === undefined) {
+                                        if (hexInfo.deployed && hexInfo.canBeWalkedBy[n.id] === undefined && hexInfo.x === parseFloat(hex.style.left) && hexInfo.y === parseFloat(hex.style.top)) {
+                                            let canWalkOnTile = true;
+                                            for (let i = 0; i < n.type.cantWalkOn.length; i++) {
+                                                if (n.type.cantWalkOn[i] === hex.className) {
+                                                    canWalkOnTile = false;
+                                                }
+                                            }
+                                            if(canWalkOnTile) {
                                                 hexInfo.canBeWalkedBy[n.id] = i;
                                             }
                                         }
