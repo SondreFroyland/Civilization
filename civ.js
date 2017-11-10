@@ -71,13 +71,8 @@ function setup() {
             for (let hex of manyHexInfo) {
                 if (hex.deployed) {
                     if ((hex.x + screenXPos) < -130 || (hex.x + screenXPos) > 920 || (hex.y + screenYPos) < -140 || (hex.y + screenYPos) > 620) {
-                        for (let hexDiv of manyHexDiv) {
-                            if (parseFloat(hexDiv.style.left) === hex.x && parseFloat(hexDiv.style.top) === hex.y) {
-                                hex.deployed = false;
-                                hexDiv.remove();
-                                manyHexDiv.splice(manyHexDiv.indexOf(hexDiv), 1);
-                            }
-                        }
+                        hex.deployed = false;
+                        hex.div.remove();
                     }
                 }
                 createHexTiles(hex);
@@ -99,12 +94,11 @@ function setup() {
             divHex.appendChild(divHexBot);
             divHex.style.left = hex.x + "px";
             divHex.style.top = hex.y + "px";
-            manyHexDiv.push(divHex);
+            hex.div = divHex;
         }
     }
 
     let manyHexInfo = [];
-    let manyHexDiv = [];
 
     let units = [];
 
@@ -213,45 +207,40 @@ function setup() {
         let div = e.path[0];
         if (div.classList.contains("unit")) {
             for (let n of units) {
-                if (parseFloat(div.id) === n.id) {
-                    n.div.style.opacity = 0.5;
+                if (div === n.div) {
+                    div.style.opacity = 0.5;
                     focusunit = n;
                     let searchingTiles = [];
                     let newSearchingTiles = [];
-                    for (let hex of manyHexDiv) {
-                        if (n.x === parseFloat(hex.style.left) && n.y === parseFloat(hex.style.top)) {
+                    for (let hex of manyHexInfo) {
+                        if (n.x === hex.x && n.y === hex.y) {
                             searchingTiles.push(hex);
                             focustile = hex;
                         }
                     }
                     for (let i = 1; i <= n.currentmoves; i++) {
-                        for (let hex of manyHexDiv) {
-                            for (let searchTile of searchingTiles) {
-                                if (distance(parseFloat(searchTile.style.left), parseFloat(searchTile.style.top), parseFloat(hex.style.left), parseFloat(hex.style.top), 0, 0) <= 100) {
-                                    for (let hexInfo of manyHexInfo) {
-                                        if (hexInfo.deployed && hexInfo.canBeWalkedBy[n.id] === undefined && hexInfo.x === parseFloat(hex.style.left) && hexInfo.y === parseFloat(hex.style.top)) {
-                                            let canWalkOnTile = true;
-                                            for (let i = 0; i < n.type.cantWalkOn.length; i++) {
-                                                if (n.type.cantWalkOn[i] === hex.className) {
-                                                    canWalkOnTile = false;
-                                                }
-                                            }
-                                            if(canWalkOnTile) {
-                                                hexInfo.canBeWalkedBy[n.id] = i;
+                        for (let hex of manyHexInfo) {
+                            if (hex.deployed) {
+                                for (let searchTile of searchingTiles) {
+                                    if (distance(searchTile.x, searchTile.y, hex.x, hex.y, 0, 0) <= 100 && hex.canBeWalkedBy[n.id] === undefined) {
+
+                                        let canWalkOnTile = true;
+                                        for (let i = 0; i < n.type.cantWalkOn.length; i++) {
+                                            if (n.type.cantWalkOn[i] === hex.hexClass) {
+                                                canWalkOnTile = false;
                                             }
                                         }
-                                    }
-                                    let canWalkOnTile = true;
-                                    for (let i = 0; i < n.type.cantWalkOn.length; i++) {
-                                        if (n.type.cantWalkOn[i] === hex.className) {
-                                            canWalkOnTile = false;
+                                        if (canWalkOnTile) {
+                                            hex.canBeWalkedBy[n.id] = i;
+                                            if (searchingTiles.indexOf(hex) === -1) {
+                                                newSearchingTiles.push(hex);
+                                            }
                                         }
-                                    }
-                                    if (searchingTiles.indexOf(hex) === -1 && canWalkOnTile) {
-                                        newSearchingTiles.push(hex);
                                     }
                                 }
+
                             }
+
                         }
                         for (let newTile of newSearchingTiles) {
                             if (searchingTiles.indexOf(newTile) === -1) {
@@ -259,8 +248,8 @@ function setup() {
                             }
                         }
                     }
-                    for (let j of searchingTiles) {
-                        j.style.opacity = 0.5;
+                    for (let searchTile of searchingTiles) {
+                        searchTile.div.style.opacity = 0.5;
                     }
                 }
             }
@@ -268,13 +257,13 @@ function setup() {
             if (focusunit != undefined) {
                 for (let hex of manyHexInfo) {
                     hex.canBeWalkedBy[focusunit.id] = undefined;
+                    if (hex.div !== undefined) {
+                        hex.div.style.opacity = 1;
+                    }  //burde gjøre slik at dette bare sjer med de tiles som faktisk var lyst opp på grunn av movement, ikke alle tiles på hele brettet
                 }
                 focusunit.div.style.opacity = 1;
                 focusunit = undefined;
                 focustile = undefined;
-                for (let hex of manyHexDiv) { //burde gjøre slik at dette bare sjer med de tiles som faktisk var lyst opp på grunn av movement, ikke alle tiles på hele brettet
-                    hex.style.opacity = 1;
-                }
             }
         }
     }
@@ -286,31 +275,35 @@ function setup() {
             div = e.path[1];
         }
         e.preventDefault();
-        if (focusunit != undefined) {
-            for (let hexClicked of manyHexInfo) {
-                if (hexClicked.deployed && hexClicked.canBeWalkedBy[focusunit.id] <= focusunit.currentmoves) {
-                    if (hexClicked.x === parseFloat(div.style.left) && hexClicked.y === parseFloat(div.style.top) && !hexClicked.occupied) {
-                        focusunit.x = parseFloat(div.style.left);
-                        focusunit.y = parseFloat(div.style.top);
-                        focusunit.div.style.left = div.style.left;
-                        focusunit.div.style.top = div.style.top;
-                        //reducing currentmoves based on distance traveled
-                        focusunit.currentmoves -= hexClicked.canBeWalkedBy[focusunit.id];
-
-                        for (let hex of manyHexInfo) {
-                            if (distance(focusunit.x, focusunit.y, hex.x, hex.y, 0, 0) <= (focusunit.type.moves + 1) * 100) {
-                                hex.discovererd[playerid] = true;
-                                createHexTiles(hex);
-                            }
-                            if (hex.x === parseFloat(focustile.style.left) && hex.y === parseFloat(focustile.style.top)) {
-                                hex.occupied = false;
-                            }
-                            if (hex.x === parseFloat(div.style.left) && hex.y === parseFloat(div.style.top)) {
+        if (focusunit !== undefined) {
+            for (let hex of manyHexInfo) {
+                if (hex.deployed) {
+                    if (hex.canBeWalkedBy[focusunit.id] <= focusunit.currentmoves) {
+                        if (hex.x === parseFloat(div.style.left) && hex.y === parseFloat(div.style.top)) {
+                            if(!hex.occupied) { //why tf isnt this occupied shit working????
                                 hex.occupied = true;
+                                focusunit.x = parseFloat(div.style.left);
+                                focusunit.y = parseFloat(div.style.top);
+                                focusunit.div.style.left = focusunit.x + "px";
+                                focusunit.div.style.top = focusunit.y + "px";
+                                //reducing currentmoves based on distance traveled
+                                focusunit.currentmoves -= hex.canBeWalkedBy[focusunit.id];
+    
+                                for (let hexDiscover of manyHexInfo) {
+                                    if (!hexDiscover.deployed && distance(focusunit.x, focusunit.y, hexDiscover.x, hexDiscover.y, 0, 0) <= (focusunit.type.moves + 1) * 100) {
+                                        hexDiscover.discovererd[playerid] = true;
+                                        createHexTiles(hexDiscover);
+                                    }
+                                    if (hexDiscover.x === focustile.x && hexDiscover.y === focustile.y) {
+                                        hexDiscover.occupied = false;
+                                    }
+                                }
+
                             }
                         }
                     }
                 }
+
             }
             for (let hex of manyHexInfo) {
                 hex.canBeWalkedBy[focusunit.id] = undefined;
@@ -318,8 +311,10 @@ function setup() {
             focusunit.div.style.opacity = 1;
             focusunit = undefined;
             focustile = undefined;
-            for (let hex of manyHexDiv) { //burde gjøre slik at dette bare sjer med de tiles som faktisk var lyst opp på grunn av movement, ikke alle tiles på hele brettet
-                hex.style.opacity = 1;
+            for (let hex of manyHexInfo) { //burde gjøre slik at dette bare sjer med de tiles som faktisk var lyst opp på grunn av movement, ikke alle tiles på hele brettet
+                if (hex.div !== undefined) {
+                    hex.div.style.opacity = 1;
+                }
             }
         }
     }
