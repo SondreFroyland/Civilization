@@ -142,20 +142,8 @@ function setup() {
             }
         }
     }
-    /*function splashline(startX, startY, endX, endY, startRadius, midRadius, endRadius, className) {
-        let distance = distance(startX, startY, endX, endY, 0, 0);
-        let focusX = startX;
-        let focusY = startY;
-        let currentRadius = startRadius;
-        for (i = 0; i < (startRadius + midRadius) / 2;) {
-            splashtiles(focusX, focusY, currentRadius, className);
-            //increase currentRadius and focusX/Y and i in some way to get smooth transition
-            //move along distance vector according to current radius, then increase radius according
-            //to how far along the path between radi1 and radi2, for example halfway between it would have
-            //the average radius.
-        }
-    }*/
 
+    //bør kanskje bruke en mer psuedo random generation method
     function generateWorld() {
         for (let i = 0; i <= 100; i++) {
             let randTileClass = terrainTypes[Math.floor(Math.random() * terrainTypes.length)];
@@ -173,7 +161,7 @@ function setup() {
         }
     }
 
-    let settlerUnit = {
+    let settlerUnit = { //bør lage disse i en database eller tabell på en måte
         stringType: "settler",
         moves: 2,
         life: 100,
@@ -206,6 +194,12 @@ function setup() {
 
     let focusunit = undefined;
     let focustile = undefined;
+
+    //kanskje legge til at du kan dra uten å fjerne selection av tiles
+    //masse for loops lager mye lag, kanskje det kan kuttes ned på dem på en eller annen måte...
+    //kanskje forandre måten det fungerer på delvis, skrive det igjen mer ryddig
+    //gjøre slik at en kan bevege seg bare 1 tile, og trekke det ifra movement, og så blir movement reset på turn end
+    //skog og fjell etc koster 2 moves istedenfor 1.
     function selectUnit(e) {
         let div = e.path[0];
         if (div.classList.contains("unit")) {
@@ -223,7 +217,9 @@ function setup() {
                     }
                     for (let i = 0; i <= n.type.moves; i++) {
                         for (let newTile of newSearchingTiles) {
-                            searchingTiles.push(newTile);
+                            if(searchingTiles.indexOf(newTile) === -1) {
+                                searchingTiles.push(newTile);
+                            }
                         }
                         for (let hex of manyHexDiv) {
                             for (let searchTile of searchingTiles) {
@@ -241,7 +237,6 @@ function setup() {
                             }
                         }
                     }
-
                     for (let j of searchingTiles) {
                         j.style.opacity = 0.5;
                         for (let hex of manyHexInfo) {
@@ -306,44 +301,7 @@ function setup() {
                 hex.style.opacity = 1;
             }
         }
-
-
-
-        /*if (focusunit != undefined) {
-            if (distance(focusunit.x, focusunit.y, parseFloat(div.style.left), parseFloat(div.style.top), 0, 0) <= focusunit.type.moves * 100) {
-                for (let hex of manyHexInfo) {
-                    if (hex.x === parseFloat(div.style.left) && hex.y === parseFloat(div.style.top)) {
-                        if (!hex.occupied) {
-                            focusunit.x = parseFloat(div.style.left);
-                            focusunit.y = parseFloat(div.style.top);
-                            focusunit.div.style.left = div.style.left;
-                            focusunit.div.style.top = div.style.top;
-                            for (let hex of manyHexInfo) {
-                                if (distance(focusunit.x, focusunit.y, hex.x, hex.y, 0, 0) <= (focusunit.type.moves + 1) * 100) {
-                                    hex.discovererd[playerid] = true;
-                                    createHexTiles(hex);
-                                }
-                                if (hex.x === parseFloat(focustile.style.left) && hex.y === parseFloat(focustile.style.top)) {
-                                    hex.occupied = false;
-                                }
-                                if (hex.x === parseFloat(div.style.left) && hex.y === parseFloat(div.style.top)) {
-                                    hex.occupied = true;
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
-
-            focusunit.div.style.opacity = 1;
-            focusunit = undefined;
-            for (let hex of manyHexDiv) { //burde gjøre slik at dette bare sjer med de tiles som faktisk var lyst opp på grunn av movement, ikke alle tiles på hele brettet
-                hex.style.opacity = 1;
-            }
-        }*/
     }
-
     createUnit(settlerUnit, 300, 172, playerid);
     createUnit(scoutUnit, 400, 172, playerid);
     border.addEventListener("click", selectUnit);
