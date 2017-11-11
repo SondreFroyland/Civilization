@@ -38,7 +38,7 @@ class unit {
         this.x = x;
         this.y = y;
         this.type = type;
-        this.class = type.stringType;
+        //this.class = type.stringType; fjerner denne, ser om det sjer noen problemer
         this.player = player;
         this.id = unitid;
         this.currentmoves = this.type.moves;
@@ -66,7 +66,7 @@ let hexGress = {
 }
 let hexFjell = {
     class: "fjell",
-    penalty: 2
+    penalty: 5
 }
 
 let terrainTypes = [hexGress, hexGress, hexGress, hexØrken, hexØrken, hexFjell, hexSjø];
@@ -186,7 +186,7 @@ function setup() {
     }
     let scoutUnit = {
         stringType: "scout",
-        moves: 6,
+        moves: 10,
         vision: 4,
         life: 50,
         cantWalkOn: ["sjø"]
@@ -240,6 +240,7 @@ function setup() {
                 if (div === n.div) {
                     div.style.opacity = 0.5;
                     focusunit = n;
+                    console.log(n.currentmoves);
                     let searchingTiles = [];
                     let newSearchingTiles = [];
                     for (let hex of manyHexInfo) {
@@ -255,8 +256,8 @@ function setup() {
                                 for (let searchTile of searchingTiles) {
                                     if (searchTile.canBeWalkedBy[n.id] === (i-1) && distance(searchTile.x, searchTile.y, hex.x, hex.y, 0, 0) <= 100 && hex.canBeWalkedBy[n.id] === undefined) {
                                         let canWalkOnTile = true;
-                                        for (let i = 0; i < n.type.cantWalkOn.length; i++) {
-                                            if (n.type.cantWalkOn[i] === hex.hexType.class) {
+                                        for (let j = 0; j < n.type.cantWalkOn.length; j++) {
+                                            if (n.type.cantWalkOn[j] === hex.hexType.class) {
                                                 canWalkOnTile = false;
                                             }
                                         }
