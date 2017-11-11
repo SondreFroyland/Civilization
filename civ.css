@@ -1,3 +1,10 @@
+#minimap {
+    position: absolute;
+    top: 20px;
+    left: 950px;
+    border: 2px solid black;
+}
+
 .unit {
     position: absolute;
     width: 100px;

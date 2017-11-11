@@ -45,6 +45,11 @@ class unit {
     }
 }
 
+/* Om det trengs å holde track på player som har discovera tiles, player sin view av hvilke tiles som kan flyttes til(opacity):
+Om det går an i firebase å velge hva for noe informasjon som skal sendes til andre, er det bare å ikke sende info om hvilke tiles de andre trykker på og får til å lyse opp, og hvilke tiles de har discovera, det trenger bare hver player å vite sin egen informasjon om
+det som trengs å sendes(og holdes track på hvilken player det hører til) er byer, units og unitmovements, unitcreations etc.
+*/
+
 /*
 Ha en tabell over unittypes, med info om hvor mange tiles de kan gå, om de kan gå over fjell/vann,
 kanskje liv, attack, defence
@@ -54,19 +59,23 @@ let playerid = 0;
 
 let hexØrken = {
     class: "ørken",
-    penalty: 1
+    penalty: 1,
+    miniMapColor: "yellow"
 }
 let hexSjø = {
     class: "sjø",
-    penalty: 1
+    penalty: 1,
+    miniMapColor: "blue"
 }
 let hexGress = {
     class: "gress",
-    penalty: 1
+    penalty: 1,
+    miniMapColor: "green"
 }
 let hexFjell = {
     class: "fjell",
-    penalty: 5
+    penalty: 5,
+    miniMapColor: "grey"
 }
 
 let terrainTypes = [hexGress, hexGress, hexGress, hexØrken, hexØrken, hexFjell, hexSjø];
@@ -81,6 +90,7 @@ function setup() {
 
     border.addEventListener("mousemove", flytt);
     function flytt(e) {
+        drawMiniMap();
         if (e.buttons === 1) {
             screenXPos = screenXPos + 2 * e.movementX;
             screenYPos = screenYPos + 2 * e.movementY;
@@ -102,9 +112,6 @@ function setup() {
         if ((hex.x + screenXPos) > -150 && (hex.x + screenXPos) < 940 && (hex.y + screenYPos) > -160 && (hex.y + screenYPos) < 640 && !hex.deployed && hex.discovererd[playerid]) {
             hex.deployed = true;
             let divHex = document.createElement("div");
-            if(hex.hexType === undefined) {
-                console.log(hex.hexType, hex);
-            }
             divHex.className = hex.hexType.class;
             let divHexTop = document.createElement("div");
             divHexTop.className = "hexTop";
@@ -177,7 +184,7 @@ function setup() {
         }
     }
 
-    let settlerUnit = { //bør lage disse i en database eller tabell på en måte
+    let settlerUnit = { //bør kanskje lage disse i en database eller tabell på en måte, eller definere en class constructor, selvom dette funker helt fint da..
         stringType: "settler",
         moves: 2,
         vision: 3,
@@ -230,9 +237,7 @@ function setup() {
 
     //kanskje legge til at du kan dra uten å fjerne selection av tiles
     //masse for loops lager mye lag, kanskje det kan kuttes ned på dem på en eller annen måte...
-    //kanskje forandre måten det fungerer på delvis, skrive det igjen mer ryddig
-    //gjøre slik at en kan bevege seg bare 1 tile, og trekke det ifra movement, og så blir movement reset på turn end
-    //skog og fjell etc koster 2 moves istedenfor 1.
+    border.addEventListener("click", selectUnit);
     function selectUnit(e) {
         let div = e.path[0];
         if (div.classList.contains("unit") && focusunit === undefined) {
@@ -254,7 +259,7 @@ function setup() {
                         for (let hex of manyHexInfo) {
                             if (hex.deployed) {
                                 for (let searchTile of searchingTiles) {
-                                    if (searchTile.canBeWalkedBy[n.id] === (i-1) && distance(searchTile.x, searchTile.y, hex.x, hex.y, 0, 0) <= 100 && hex.canBeWalkedBy[n.id] === undefined) {
+                                    if (searchTile.canBeWalkedBy[n.id] === (i - 1) && distance(searchTile.x, searchTile.y, hex.x, hex.y, 0, 0) <= 100 && hex.canBeWalkedBy[n.id] === undefined) {
                                         let canWalkOnTile = true;
                                         for (let j = 0; j < n.type.cantWalkOn.length; j++) {
                                             if (n.type.cantWalkOn[j] === hex.hexType.class) {
@@ -280,7 +285,7 @@ function setup() {
                         }
                     }
                     for (let searchTile of searchingTiles) {
-                        if(searchTile.canBeWalkedBy[n.id] <= n.currentmoves) {
+                        if (searchTile.canBeWalkedBy[n.id] <= n.currentmoves) {
                             searchTile.div.style.opacity = 0.5;
                         }
                     }
@@ -357,5 +362,79 @@ function setup() {
     createUnit(scoutUnit, 400, 172, playerid);
     createUnit(boatUnit, 200, 172, playerid);
     createUnit(boatUnit, 500, 172, playerid);
-    border.addEventListener("click", selectUnit);
+
+    //using canvas to create minimap
+    let canvas = document.getElementById("minimap");
+    let ctx = canvas.getContext("2d");
+
+    function drawMiniMap() {
+        let canvasTiles = [];
+        for (let hex of manyHexInfo) {
+            if (hex.discovererd[playerid]) {
+                canvasTiles.push(hex);
+            }
+        }
+        let minX;
+        let maxX;
+        let minY;
+        let maxY;
+        for (let tile of canvasTiles) {
+            if (tile.x < minX || minX === undefined) {
+                minX = tile.x;
+            }
+            if (tile.x > maxX || maxX === undefined) {
+                maxX = tile.x;
+            }
+            if (tile.y < minY || minY === undefined) {
+                minY = tile.y;
+            }
+            if (tile.y > maxY || maxY === undefined) {
+                maxY = tile.y;
+            }
+        }
+        let canW = maxX - minX;
+        let canH = maxY - minY;
+        let antallTilesX = canW / 100 + 1;
+        let antallTilesY = canH / 100 + 1;
+
+        let yHeight = Math.ceil(300 * canH / canW);
+        let yReferenceLine = (300 - yHeight) / 2;
+
+        let xHeight = Math.ceil(300 * canW / canH);
+        let xReferenceLine = (300 - xHeight) / 2;
+
+        ctx.clearRect(0, 0, 300, 300);
+        if (Math.max(canW, canH) === canW) {
+            //filldir = x;
+            for (let tile of canvasTiles) {
+                let width = Math.ceil(300 / antallTilesX);
+                let x = (tile.x - minX) * (300 - width) / canW + (width / 2);
+                let y = (tile.y - minY) * (yHeight - width) / canH + yReferenceLine + (width / 2);
+                let drawColor = tile.hexType.miniMapColor;
+                drawHex(x, y, width, drawColor);
+            }
+
+            //antall tiles i hver retning, vet også posisjonen til hver av tilesa
+            //bare ha mapFillcolor som en property i hex.hexType, så blir den lett å hente frem og forandre
+        } else {
+            //filldir = y;
+            for (let tile of canvasTiles) {
+                let width = Math.ceil(300 / antallTilesY);
+                let x = (tile.x - minX) * (xHeight - width) / canW + xReferenceLine + (width / 2);
+                let y = (tile.y - minY) * (300 - width) / canH + (width / 2);
+                let drawColor = tile.hexType.miniMapColor;
+                drawHex(x, y, width, drawColor);
+            }
+        }
+        function drawHex(x, y, width, fillColor) {
+            ctx.beginPath();
+            for (i = 0; i < 6; i++) {
+                ctx.lineTo(x + width / 2 * Math.cos(Math.PI * (2 * i + 1) / 6), y + width / 2 * Math.sin(Math.PI * (2 * i + 1) / 6));
+            }
+            ctx.closePath();
+            ctx.fillStyle = fillColor;
+            ctx.fill();
+        }
+    }
+    drawMiniMap();
 }
