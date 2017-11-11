@@ -90,6 +90,7 @@ function setup() {
 
     border.addEventListener("mousemove", flytt);
     function flytt(e) {
+        moveMiniMapBorder();
         drawMiniMap();
         if (e.buttons === 1) {
             screenXPos = screenXPos + 2 * e.movementX;
@@ -367,8 +368,12 @@ function setup() {
     let canvas = document.getElementById("minimap");
     let ctx = canvas.getContext("2d");
 
+    let canvasTiles = [];
+
+    let canvasDrawDir = "x";
+
     function drawMiniMap() {
-        let canvasTiles = [];
+        canvasTiles = [];
         for (let hex of manyHexInfo) {
             if (hex.discovererd[playerid]) {
                 canvasTiles.push(hex);
@@ -406,6 +411,7 @@ function setup() {
         ctx.clearRect(0, 0, 300, 300);
         if (Math.max(canW, canH) === canW) {
             //filldir = x;
+            canvasDrawDir = "x";
             for (let tile of canvasTiles) {
                 let width = Math.ceil(300 / antallTilesX);
                 let x = (tile.x - minX) * (300 - width) / canW + (width / 2);
@@ -418,6 +424,7 @@ function setup() {
             //bare ha mapFillcolor som en property i hex.hexType, så blir den lett å hente frem og forandre
         } else {
             //filldir = y;
+            canvasDrawDir = "y";
             for (let tile of canvasTiles) {
                 let width = Math.ceil(300 / antallTilesY);
                 let x = (tile.x - minX) * (xHeight - width) / canW + xReferenceLine + (width / 2);
@@ -435,6 +442,57 @@ function setup() {
             ctx.fillStyle = fillColor;
             ctx.fill();
         }
+    }
+    let winLoc = document.getElementById("minimapborder");
+    function moveMiniMapBorder() {
+        let minX;
+        let maxX;
+        let minY;
+        let maxY;
+        for (let tile of canvasTiles) {
+            if (tile.x < minX || minX === undefined) {
+                minX = tile.x;
+            }
+            if (tile.x > maxX || maxX === undefined) {
+                maxX = tile.x;
+            }
+            if (tile.y < minY || minY === undefined) {
+                minY = tile.y;
+            }
+            if (tile.y > maxY || maxY === undefined) {
+                maxY = tile.y;
+            }
+        }
+        console.log(maxY, minY);
+        let canW = maxX - minX + 100;
+        let canH = maxY - minY + 100;
+
+        let yHeight = Math.ceil(300 * canH / canW);
+        let yReferenceLine = (300 - yHeight) / 2;
+
+        let xHeight = Math.ceil(300 * canW / canH);
+        let xReferenceLine = (300 - xHeight) / 2;
+
+        let windowWidth;
+        let windowHeight;
+
+        if (canvasDrawDir === "x") {
+            windowWidth = 800 * 300 / canW;
+            windowHeight = 550 * windowWidth / 800;
+            winLoc.style.left = -(screenXPos + minX) * (300 / canW) + "px";
+            winLoc.style.top = -(screenYPos + minY) * (270 / canW) + yReferenceLine + "px";
+
+        } else {
+
+            windowHeight = 550 * 300 / canH;
+            windowWidth = 800 * windowHeight / 550;
+            winLoc.style.left = -(screenXPos + minX) * (270 / canH) + xReferenceLine + "px";
+            winLoc.style.top = -(screenYPos + minY) * (300 / canH) + "px";
+        }
+        
+        winLoc.style.width = windowWidth + "px";
+        winLoc.style.height = windowHeight + "px";
+
     }
     drawMiniMap();
 }
