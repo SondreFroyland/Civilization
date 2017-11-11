@@ -21,10 +21,10 @@ TODO: Add canvas for map display based on what hextiles are discovered
 
 
 class hexInfo {
-    constructor(x, y, hexClass) {
+    constructor(x, y, hexType) {
         this.x = x;
         this.y = y;
-        this.hexClass = hexClass;
+        this.hexType = hexType;
         this.deployed = false;
         this.discovererd = []; //array containing information of what players have discovered the tile
         this.occupied = false;
@@ -38,6 +38,7 @@ class unit {
         this.x = x;
         this.y = y;
         this.type = type;
+        this.class = type.stringType;
         this.player = player;
         this.id = unitid;
         this.currentmoves = this.type.moves;
@@ -51,7 +52,24 @@ kanskje liv, attack, defence
 
 let playerid = 0;
 
-let terrainTypes = ["gress", "gress", "gress", "ørken", "ørken", "fjell", "sjø"];
+let hexØrken = {
+    class: "ørken",
+    penalty: 1
+}
+let hexSjø = {
+    class: "sjø",
+    penalty: 1
+}
+let hexGress = {
+    class: "gress",
+    penalty: 1
+}
+let hexFjell = {
+    class: "fjell",
+    penalty: 2
+}
+
+let terrainTypes = [hexGress, hexGress, hexGress, hexØrken, hexØrken, hexFjell, hexSjø];
 
 window.ondragstart = function () { return false; }
 
@@ -84,7 +102,10 @@ function setup() {
         if ((hex.x + screenXPos) > -150 && (hex.x + screenXPos) < 940 && (hex.y + screenYPos) > -160 && (hex.y + screenYPos) < 640 && !hex.deployed && hex.discovererd[playerid]) {
             hex.deployed = true;
             let divHex = document.createElement("div");
-            divHex.className = hex.hexClass;
+            if(hex.hexType === undefined) {
+                console.log(hex.hexType, hex);
+            }
+            divHex.className = hex.hexType.class;
             let divHexTop = document.createElement("div");
             divHexTop.className = "hexTop";
             let divHexBot = document.createElement("div");
@@ -114,7 +135,7 @@ function setup() {
             xpos = j * 100 + 50;
         }
 
-        let newHexInfo = new hexInfo(xpos, ypos, "sjø");
+        let newHexInfo = new hexInfo(xpos, ypos, hexSjø);
         manyHexInfo.push(newHexInfo);
     }
 
@@ -130,10 +151,10 @@ function setup() {
         return dist;
     }
 
-    function splashtiles(xlocation, ylocation, radius, className) {
+    function splashtiles(xlocation, ylocation, radius, hexType) {
         for (let hex of manyHexInfo) {
             if (distance(hex.x, hex.y, xlocation, ylocation, 50, 58) <= radius) {
-                hex.hexClass = className;
+                hex.hexType = hexType;
             }
         }
     }
@@ -159,14 +180,23 @@ function setup() {
     let settlerUnit = { //bør lage disse i en database eller tabell på en måte
         stringType: "settler",
         moves: 2,
+        vision: 3,
         life: 100,
         cantWalkOn: ["sjø", "fjell"]
     }
     let scoutUnit = {
         stringType: "scout",
-        moves: 3,
+        moves: 6,
+        vision: 4,
         life: 50,
         cantWalkOn: ["sjø"]
+    }
+    let boatUnit = {
+        stringType: "boat",
+        moves: 4,
+        vision: 4,
+        life: 50,
+        cantWalkOn: ["gress", "fjell", "ørken"]
     }
 
     let unitid = 0;
@@ -214,6 +244,7 @@ function setup() {
                     let newSearchingTiles = [];
                     for (let hex of manyHexInfo) {
                         if (n.x === hex.x && n.y === hex.y) {
+                            hex.canBeWalkedBy[n.id] = 0;
                             searchingTiles.push(hex);
                             focustile = hex;
                         }
@@ -222,18 +253,16 @@ function setup() {
                         for (let hex of manyHexInfo) {
                             if (hex.deployed) {
                                 for (let searchTile of searchingTiles) {
-                                    if (distance(searchTile.x, searchTile.y, hex.x, hex.y, 0, 0) <= 100 && hex.canBeWalkedBy[n.id] === undefined) {
-
+                                    if (searchTile.canBeWalkedBy[n.id] === (i-1) && distance(searchTile.x, searchTile.y, hex.x, hex.y, 0, 0) <= 100 && hex.canBeWalkedBy[n.id] === undefined) {
                                         let canWalkOnTile = true;
                                         for (let i = 0; i < n.type.cantWalkOn.length; i++) {
-                                            if (n.type.cantWalkOn[i] === hex.hexClass) {
+                                            if (n.type.cantWalkOn[i] === hex.hexType.class) {
                                                 canWalkOnTile = false;
                                             }
                                         }
                                         if (canWalkOnTile) {
-                                            hex.canBeWalkedBy[n.id] = i;
+                                            hex.canBeWalkedBy[n.id] = searchTile.canBeWalkedBy[n.id] + hex.hexType.penalty;
                                             if (searchingTiles.indexOf(hex) === -1) {
-                                                hex.div.style.opacity = 0.5;
                                                 newSearchingTiles.push(hex);
                                             }
                                         }
@@ -249,9 +278,11 @@ function setup() {
                             }
                         }
                     }
-                    /*for (let searchTile of searchingTiles) {
-                        searchTile.div.style.opacity = 0.5; //om en vil at tilen uniten står på også skal lyse, bruk dette
-                    }*/
+                    for (let searchTile of searchingTiles) {
+                        if(searchTile.canBeWalkedBy[n.id] <= n.currentmoves) {
+                            searchTile.div.style.opacity = 0.5;
+                        }
+                    }
                 }
             }
         } else {
@@ -267,7 +298,7 @@ function setup() {
                 focusunit = undefined;
                 focustile = undefined;
             }
-            if(e.path[0].classList.contains("unit")) {
+            if (e.path[0].classList.contains("unit")) {
                 selectUnit(e);
             }
         }
@@ -295,7 +326,7 @@ function setup() {
                                 focusunit.currentmoves -= hex.canBeWalkedBy[focusunit.id];
 
                                 for (let hexDiscover of manyHexInfo) {
-                                    if (!hexDiscover.deployed && distance(focusunit.x, focusunit.y, hexDiscover.x, hexDiscover.y, 0, 0) <= (focusunit.type.moves + 1) * 100) {
+                                    if (!hexDiscover.deployed && distance(focusunit.x, focusunit.y, hexDiscover.x, hexDiscover.y, 0, 0) <= (focusunit.type.vision) * 100) {
                                         hexDiscover.discovererd[playerid] = true;
                                         createHexTiles(hexDiscover);
                                     }
@@ -323,5 +354,7 @@ function setup() {
     }
     createUnit(settlerUnit, 300, 172, playerid);
     createUnit(scoutUnit, 400, 172, playerid);
+    createUnit(boatUnit, 200, 172, playerid);
+    createUnit(boatUnit, 500, 172, playerid);
     border.addEventListener("click", selectUnit);
 }
