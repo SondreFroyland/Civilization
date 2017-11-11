@@ -205,7 +205,7 @@ function setup() {
     //skog og fjell etc koster 2 moves istedenfor 1.
     function selectUnit(e) {
         let div = e.path[0];
-        if (div.classList.contains("unit")) {
+        if (div.classList.contains("unit") && focusunit === undefined) {
             for (let n of units) {
                 if (div === n.div) {
                     div.style.opacity = 0.5;
@@ -233,6 +233,7 @@ function setup() {
                                         if (canWalkOnTile) {
                                             hex.canBeWalkedBy[n.id] = i;
                                             if (searchingTiles.indexOf(hex) === -1) {
+                                                hex.div.style.opacity = 0.5;
                                                 newSearchingTiles.push(hex);
                                             }
                                         }
@@ -248,22 +249,26 @@ function setup() {
                             }
                         }
                     }
-                    for (let searchTile of searchingTiles) {
-                        searchTile.div.style.opacity = 0.5;
-                    }
+                    /*for (let searchTile of searchingTiles) {
+                        searchTile.div.style.opacity = 0.5; //om en vil at tilen uniten står på også skal lyse, bruk dette
+                    }*/
                 }
             }
         } else {
-            if (focusunit != undefined) {
+            if (focusunit !== undefined) {
                 for (let hex of manyHexInfo) {
-                    hex.canBeWalkedBy[focusunit.id] = undefined;
-                    if (hex.div !== undefined) {
+                    if (hex.canBeWalkedBy[focusunit.id] >= 0) {
+                        hex.canBeWalkedBy[focusunit.id] = undefined;
                         hex.div.style.opacity = 1;
-                    }  //burde gjøre slik at dette bare sjer med de tiles som faktisk var lyst opp på grunn av movement, ikke alle tiles på hele brettet
+                    }
+                    //burde gjøre slik at dette bare sjer med de tiles som faktisk var lyst opp på grunn av movement, ikke alle tiles på hele brettet
                 }
                 focusunit.div.style.opacity = 1;
                 focusunit = undefined;
                 focustile = undefined;
+            }
+            if(e.path[0].classList.contains("unit")) {
+                selectUnit(e);
             }
         }
     }
@@ -280,7 +285,7 @@ function setup() {
                 if (hex.deployed) {
                     if (hex.canBeWalkedBy[focusunit.id] <= focusunit.currentmoves) {
                         if (hex.x === parseFloat(div.style.left) && hex.y === parseFloat(div.style.top)) {
-                            if(!hex.occupied) { //why tf isnt this occupied shit working????
+                            if (!hex.occupied) { //why tf isnt this occupied shit working????
                                 hex.occupied = true;
                                 focusunit.x = parseFloat(div.style.left);
                                 focusunit.y = parseFloat(div.style.top);
@@ -288,7 +293,7 @@ function setup() {
                                 focusunit.div.style.top = focusunit.y + "px";
                                 //reducing currentmoves based on distance traveled
                                 focusunit.currentmoves -= hex.canBeWalkedBy[focusunit.id];
-    
+
                                 for (let hexDiscover of manyHexInfo) {
                                     if (!hexDiscover.deployed && distance(focusunit.x, focusunit.y, hexDiscover.x, hexDiscover.y, 0, 0) <= (focusunit.type.moves + 1) * 100) {
                                         hexDiscover.discovererd[playerid] = true;
@@ -306,16 +311,14 @@ function setup() {
 
             }
             for (let hex of manyHexInfo) {
-                hex.canBeWalkedBy[focusunit.id] = undefined;
+                if (focusunit.player === playerid && hex.canBeWalkedBy[focusunit.id] >= 0) {
+                    hex.canBeWalkedBy[focusunit.id] = undefined;
+                    hex.div.style.opacity = 1;
+                }
             }
             focusunit.div.style.opacity = 1;
             focusunit = undefined;
             focustile = undefined;
-            for (let hex of manyHexInfo) { //burde gjøre slik at dette bare sjer med de tiles som faktisk var lyst opp på grunn av movement, ikke alle tiles på hele brettet
-                if (hex.div !== undefined) {
-                    hex.div.style.opacity = 1;
-                }
-            }
         }
     }
     createUnit(settlerUnit, 300, 172, playerid);
