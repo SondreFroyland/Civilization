@@ -55,38 +55,46 @@ Ha en tabell over unittypes, med info om hvor mange tiles de kan gå, om de kan 
 kanskje liv, attack, defence
 */
 
-let playerid = 0;
 
-let hexØrken = {
-    class: "ørken",
-    penalty: 1,
-    miniMapColor: "yellow"
-}
-let hexSjø = {
-    class: "sjø",
-    penalty: 1,
-    miniMapColor: "blue"
-}
-let hexGress = {
-    class: "gress",
-    penalty: 1,
-    miniMapColor: "green"
-}
-let hexFjell = {
-    class: "fjell",
-    penalty: 5,
-    miniMapColor: "grey"
-}
 
-let terrainTypes = [hexGress, hexGress, hexGress, hexØrken, hexØrken, hexFjell, hexSjø];
-
-window.ondragstart = function () { return false; }
-
-let screenXPos = 0;
-let screenYPos = 0;
+//har visst mye ovenfor utenfor setup funksjonen, kan sikkert flytte noe inn, har flytta det, får se om det gjør noe
 
 function setup() {
+
+    let playerid = 0;
+    
+    let hexØrken = {
+        class: "ørken",
+        penalty: 1, //desimaltall eller 0 fungerer ikke
+        miniMapColor: "yellow"
+    }
+    let hexSjø = {
+        class: "sjø",
+        penalty: 1,
+        miniMapColor: "blue"
+    }
+    let hexGress = {
+        class: "gress",
+        penalty: 1,
+        miniMapColor: "green"
+    }
+    let hexFjell = {
+        class: "fjell",
+        penalty: 5,
+        miniMapColor: "grey"
+    }
+    
+    let terrainTypes = [hexGress, hexGress, hexGress, hexØrken, hexØrken, hexFjell, hexSjø];
+    
+    window.ondragstart = function () { return false; }
+
     let main = document.getElementById("main");
+    let screenXPos = 0;
+    let screenYPos = 0;
+    //for at forsjellige spillere skal ha forsjellig startposisjon, er det bare å forandre disse
+    //vil sansyneligvis generere en settler for hver spiller på en landtile, discovere området rundt, så si at screenX og screenY skal være sentrert på settleren
+    main.style.left = screenXPos + "px";
+    main.style.top = screenYPos + "px";
 
     border.addEventListener("mousemove", flytt);
     function flytt(e) {
@@ -253,7 +261,6 @@ function setup() {
                     div.style.opacity = 0.5;
                     focusunit = n;
                     let searchingTiles = [];
-                    let newSearchingTiles = [];
                     for (let hex of manyHexInfo) {
                         if (n.x === hex.x && n.y === hex.y) {
                             hex.canBeWalkedBy[n.id] = 0;
@@ -275,7 +282,7 @@ function setup() {
                                         if (canWalkOnTile) {
                                             hex.canBeWalkedBy[n.id] = searchTile.canBeWalkedBy[n.id] + hex.hexType.penalty;
                                             if (searchingTiles.indexOf(hex) === -1) {
-                                                newSearchingTiles.push(hex);
+                                                searchingTiles.push(hex);
                                             }
                                         }
                                     }
@@ -283,11 +290,6 @@ function setup() {
 
                             }
 
-                        }
-                        for (let newTile of newSearchingTiles) {
-                            if (searchingTiles.indexOf(newTile) === -1) {
-                                searchingTiles.push(newTile);
-                            }
                         }
                     }
                     for (let searchTile of searchingTiles) {
@@ -377,6 +379,23 @@ function setup() {
 
     let canvasDrawDir = "x";
 
+    let minX;
+    let maxX;
+    let minY;
+    let maxY;
+
+    let canW;
+    let canH;
+
+    let xHeight;
+    let xReferenceLine;
+
+    let yHeight;
+    let yReferenceLine;
+
+    let antallTilesX;
+    let antallTilesY;
+
     function drawMiniMap() {
         canvasTiles = [];
         for (let hex of manyHexInfo) {
@@ -384,10 +403,11 @@ function setup() {
                 canvasTiles.push(hex);
             }
         }
-        let minX;
-        let maxX;
-        let minY;
-        let maxY;
+        minX = undefined;
+        maxX = undefined;
+        minY = undefined;
+        maxY = undefined;
+
         for (let tile of canvasTiles) {
             if (tile.x < minX || minX === undefined) {
                 minX = tile.x;
@@ -402,7 +422,7 @@ function setup() {
                 maxY = tile.y;
             }
         }
-        let canW = maxX - minX;
+        /*let canW = maxX - minX;
         let canH = maxY - minY;
         let antallTilesX = canW / 100 + 1;
         let antallTilesY = canH / 100 + 1;
@@ -410,8 +430,19 @@ function setup() {
         let yHeight = Math.ceil(300 * canH / canW);
         let yReferenceLine = (300 - yHeight) / 2;
 
-        let xHeight = Math.ceil(300 * canW / canH);
-        let xReferenceLine = (300 - xHeight) / 2;
+        let xHeight = Math.ceil(300 * canW / canH); // old version before variables in this and bordermove merge
+        let xReferenceLine = (300 - xHeight) / 2;*/
+
+        canW = maxX - minX + 100;
+        canH = maxY - minY + 100;
+        antallTilesX = canW / 100;
+        antallTilesY = canH / 100;
+
+        xHeight = Math.ceil(300 * canW / canH);
+        xReferenceLine = (300 - xHeight) / 2;
+
+        yHeight = Math.ceil(300 * canH / canW);
+        yReferenceLine = (300 - yHeight) / 2;
 
         ctx.clearRect(0, 0, 300, 300);
         if (Math.max(canW, canH) === canW) {
@@ -419,8 +450,8 @@ function setup() {
             canvasDrawDir = "x";
             for (let tile of canvasTiles) {
                 let width = Math.ceil(300 / antallTilesX);
-                let x = (tile.x - minX) * (300 - width) / canW + (width / 2);
-                let y = (tile.y - minY) * (yHeight - width) / canH + yReferenceLine + (width / 2);
+                let x = (tile.x - minX) * 300 / canW + (width / 2);
+                let y = (tile.y - minY) * yHeight / canH + yReferenceLine + (width / 2);
                 let drawColor = tile.hexType.miniMapColor;
                 drawHex(x, y, width, drawColor);
             }
@@ -429,8 +460,8 @@ function setup() {
             canvasDrawDir = "y";
             for (let tile of canvasTiles) {
                 let width = Math.ceil(300 / antallTilesY);
-                let x = (tile.x - minX) * (xHeight - width) / canW + xReferenceLine + (width / 2);
-                let y = (tile.y - minY) * (300 - width) / canH + (width / 2);
+                let x = (tile.x - minX) * xHeight / canW + xReferenceLine + (width / 2);
+                let y = (tile.y - minY) * 300 / canH + (width / 2);
                 let drawColor = tile.hexType.miniMapColor;
                 drawHex(x, y, width, drawColor);
             }
@@ -446,51 +477,26 @@ function setup() {
         }
         moveMiniMapBorder();
     }
+
     let winLoc = document.getElementById("minimapborder");
+
     function moveMiniMapBorder() {
-        let minX;
-        let maxX;
-        let minY;
-        let maxY;
-        for (let tile of canvasTiles) {
-            if (tile.x < minX || minX === undefined) {
-                minX = tile.x;
-            }
-            if (tile.x > maxX || maxX === undefined) {
-                maxX = tile.x;
-            }
-            if (tile.y < minY || minY === undefined) {
-                minY = tile.y;
-            }
-            if (tile.y > maxY || maxY === undefined) {
-                maxY = tile.y;
-            }
-        }
-        let canW = maxX - minX + 100;
-        let canH = maxY - minY + 100;
-
-        let yHeight = Math.ceil(300 * canH / canW);
-        let yReferenceLine = (300 - yHeight) / 2;
-
-        let xHeight = Math.ceil(300 * canW / canH);
-        let xReferenceLine = (300 - xHeight) / 2;
 
         let windowWidth;
         let windowHeight;
 
-        let antallTilesX = canW / 100;
-        let antallTilesY = canH / 100;
+        //bør kanskje flytte variablene som er felles for drawminimap og moveminimapborder utforbi, slik at de slipper å bli kalkulert hver gang sjermen flyttes, men istedenfor bare når kartet tegnes 
 
         if (canvasDrawDir === "x") {
             let tileWidth = 300 / antallTilesX;
             windowWidth = 8 * tileWidth;
-            windowHeight = 5.2 * tileWidth;
+            windowHeight = 5.3 * tileWidth;
             winLoc.style.left = -(screenXPos + minX) / canW * 300 + "px";
             winLoc.style.top = -(screenYPos + minY) / canH * yHeight + yReferenceLine + "px";
 
         } else {
             let tileWidth = 300 / antallTilesY;
-            windowWidth = 7.6 * tileWidth;
+            windowWidth = 7.8 * tileWidth;
             windowHeight = 5.5 * tileWidth;
             winLoc.style.left = -(screenXPos + minX) / canW * xHeight + xReferenceLine + Math.floor(2 * antallTilesY / antallTilesX) + "px";
             winLoc.style.top = -(screenYPos + minY) / canH * 300 + "px";
@@ -500,7 +506,6 @@ function setup() {
         winLoc.style.height = windowHeight + "px";
 
         //its not very pretty, but it works
-
     }
     drawMiniMap();
     moveMiniMapBorder();
