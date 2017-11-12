@@ -91,7 +91,6 @@ function setup() {
     border.addEventListener("mousemove", flytt);
     function flytt(e) {
         moveMiniMapBorder();
-        drawMiniMap();
         if (e.buttons === 1) {
             screenXPos = screenXPos + 2 * e.movementX;
             screenYPos = screenYPos + 2 * e.movementY;
@@ -206,6 +205,13 @@ function setup() {
         life: 50,
         cantWalkOn: ["gress", "fjell", "ørken"]
     }
+    let testUnit = {
+        stringType: "test",
+        moves: 20,
+        vision: 5,
+        life: 50,
+        cantWalkOn: []
+    }
 
     let unitid = 0;
     function createUnit(type, x, y, player) {
@@ -246,7 +252,6 @@ function setup() {
                 if (div === n.div) {
                     div.style.opacity = 0.5;
                     focusunit = n;
-                    console.log(n.currentmoves);
                     let searchingTiles = [];
                     let newSearchingTiles = [];
                     for (let hex of manyHexInfo) {
@@ -258,7 +263,7 @@ function setup() {
                     }
                     for (let i = 1; i <= n.currentmoves; i++) {
                         for (let hex of manyHexInfo) {
-                            if (hex.deployed) {
+                            if (hex.deployed) { //hvis denne bare leter i de som er deployed, kan noen paths ikke vises, om dette blir et problem øker en bare antall tiles rundt sjermen som er deployed, kanskje 4-5 utenfor istedenfor 1-2
                                 for (let searchTile of searchingTiles) {
                                     if (searchTile.canBeWalkedBy[n.id] === (i - 1) && distance(searchTile.x, searchTile.y, hex.x, hex.y, 0, 0) <= 100 && hex.canBeWalkedBy[n.id] === undefined) {
                                         let canWalkOnTile = true;
@@ -341,7 +346,7 @@ function setup() {
                                         hexDiscover.occupied = false;
                                     }
                                 }
-
+                                drawMiniMap();
                             }
                         }
                     }
@@ -362,7 +367,7 @@ function setup() {
     createUnit(settlerUnit, 300, 172, playerid);
     createUnit(scoutUnit, 400, 172, playerid);
     createUnit(boatUnit, 200, 172, playerid);
-    createUnit(boatUnit, 500, 172, playerid);
+    createUnit(testUnit, 500, 172, playerid);
 
     //using canvas to create minimap
     let canvas = document.getElementById("minimap");
@@ -410,7 +415,7 @@ function setup() {
 
         ctx.clearRect(0, 0, 300, 300);
         if (Math.max(canW, canH) === canW) {
-            //filldir = x;
+            //filldir = x
             canvasDrawDir = "x";
             for (let tile of canvasTiles) {
                 let width = Math.ceil(300 / antallTilesX);
@@ -419,11 +424,8 @@ function setup() {
                 let drawColor = tile.hexType.miniMapColor;
                 drawHex(x, y, width, drawColor);
             }
-
-            //antall tiles i hver retning, vet også posisjonen til hver av tilesa
-            //bare ha mapFillcolor som en property i hex.hexType, så blir den lett å hente frem og forandre
         } else {
-            //filldir = y;
+            //filldir = y
             canvasDrawDir = "y";
             for (let tile of canvasTiles) {
                 let width = Math.ceil(300 / antallTilesY);
@@ -442,6 +444,7 @@ function setup() {
             ctx.fillStyle = fillColor;
             ctx.fill();
         }
+        moveMiniMapBorder();
     }
     let winLoc = document.getElementById("minimapborder");
     function moveMiniMapBorder() {
@@ -463,7 +466,6 @@ function setup() {
                 maxY = tile.y;
             }
         }
-        console.log(maxY, minY);
         let canW = maxX - minX + 100;
         let canH = maxY - minY + 100;
 
@@ -476,23 +478,30 @@ function setup() {
         let windowWidth;
         let windowHeight;
 
+        let antallTilesX = canW / 100;
+        let antallTilesY = canH / 100;
+
         if (canvasDrawDir === "x") {
-            windowWidth = 800 * 300 / canW;
-            windowHeight = 550 * windowWidth / 800;
-            winLoc.style.left = -(screenXPos + minX) * (300 / canW) + "px";
-            winLoc.style.top = -(screenYPos + minY) * (270 / canW) + yReferenceLine + "px";
+            let tileWidth = 300 / antallTilesX;
+            windowWidth = 8 * tileWidth;
+            windowHeight = 5.2 * tileWidth;
+            winLoc.style.left = -(screenXPos + minX) / canW * 300 + "px";
+            winLoc.style.top = -(screenYPos + minY) / canH * yHeight + yReferenceLine + "px";
 
         } else {
-
-            windowHeight = 550 * 300 / canH;
-            windowWidth = 800 * windowHeight / 550;
-            winLoc.style.left = -(screenXPos + minX) * (270 / canH) + xReferenceLine + "px";
-            winLoc.style.top = -(screenYPos + minY) * (300 / canH) + "px";
+            let tileWidth = 300 / antallTilesY;
+            windowWidth = 7.6 * tileWidth;
+            windowHeight = 5.5 * tileWidth;
+            winLoc.style.left = -(screenXPos + minX) / canW * xHeight + xReferenceLine + Math.floor(2 * antallTilesY / antallTilesX) + "px";
+            winLoc.style.top = -(screenYPos + minY) / canH * 300 + "px";
         }
-        
+
         winLoc.style.width = windowWidth + "px";
         winLoc.style.height = windowHeight + "px";
 
+        //its not very pretty, but it works
+
     }
     drawMiniMap();
+    moveMiniMapBorder();
 }
