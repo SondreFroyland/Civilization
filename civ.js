@@ -66,22 +66,27 @@ function setup() {
     let hexØrken = {
         class: "ørken",
         penalty: 1, //desimaltall eller 0 fungerer ikke
-        miniMapColor: "yellow"
+        miniMapColor: "#F9D90F"
     }
     let hexSjø = {
         class: "sjø",
         penalty: 1,
-        miniMapColor: "blue"
+        miniMapColor: "#1D77A5"
     }
     let hexGress = {
         class: "gress",
         penalty: 1,
-        miniMapColor: "green"
+        miniMapColor: "#54DD23"
     }
     let hexFjell = {
         class: "fjell",
-        penalty: 5,
-        miniMapColor: "grey"
+        penalty: 3,
+        miniMapColor: "#795D41"
+    }
+    let hexSkog = {
+        class: "skog",
+        penalty: 2,
+        miniMapColor: "#0B6611"
     }
     
     let terrainTypes = [hexGress, hexGress, hexGress, hexØrken, hexØrken, hexFjell, hexSjø];
