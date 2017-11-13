@@ -89,7 +89,7 @@ function setup() {
         miniMapColor: "#0B6611"
     }
     
-    let terrainTypes = [hexGress, hexGress, hexGress, hexØrken, hexØrken, hexFjell, hexSjø];
+    let terrainTypes = [hexGress, hexGress, hexGress, hexSkog, hexØrken, hexØrken, hexFjell, hexSjø];
     
     window.ondragstart = function () { return false; }
 
