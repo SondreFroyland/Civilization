@@ -490,7 +490,8 @@ function setup() {
         let windowWidth;
         let windowHeight;
 
-        //bør kanskje flytte variablene som er felles for drawminimap og moveminimapborder utforbi, slik at de slipper å bli kalkulert hver gang sjermen flyttes, men istedenfor bare når kartet tegnes 
+        /*bør kanskje flytte variablene som er felles for drawminimap og moveminimapborder utforbi, slik at de slipper å bli 
+        kalkulert hver gang sjermen flyttes, men istedenfor bare når kartet tegnes */
 
         if (canvasDrawDir === "x") {
             let tileWidth = 300 / antallTilesX;
