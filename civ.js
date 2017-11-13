@@ -62,7 +62,7 @@ kanskje liv, attack, defence
 function setup() {
 
     let playerid = 0;
-    
+
     let hexØrken = {
         class: "ørken",
         penalty: 1, //desimaltall eller 0 fungerer ikke
@@ -88,9 +88,9 @@ function setup() {
         penalty: 2,
         miniMapColor: "#0B6611"
     }
-    
+
     let terrainTypes = [hexGress, hexGress, hexGress, hexSkog, hexØrken, hexØrken, hexFjell, hexSjø];
-    
+
     window.ondragstart = function () { return false; }
 
     let main = document.getElementById("main");
@@ -100,6 +100,12 @@ function setup() {
     //vil sansyneligvis generere en settler for hver spiller på en landtile, discovere området rundt, så si at screenX og screenY skal være sentrert på settleren
     main.style.left = screenXPos + "px";
     main.style.top = screenYPos + "px";
+
+    let focusunit = undefined;
+    let focustile = undefined;
+
+    let intervalXDirection = "";
+    let intervalYDirection = "";
 
     border.addEventListener("mousemove", flytt);
     function flytt(e) {
@@ -119,10 +125,86 @@ function setup() {
                 createHexTiles(hex);
             }
         }
+
+        if (e.clientX < 100 + 50) {
+            if (intervalXDirection !== "left") {
+                moveLeft = setInterval(moveMap, 40, "left");
+                intervalXDirection = "left";
+            }
+        } else {
+            if (intervalXDirection === "left") {
+                clearInterval(moveLeft);
+                intervalXDirection = "";
+            }
+        }
+
+        if (e.clientX > 900 - 50) {
+            if (intervalXDirection !== "right") {
+                moveRight = setInterval(moveMap, 40, "right");
+                intervalXDirection = "right";
+            }
+        } else {
+            if (intervalXDirection === "right") {
+                clearInterval(moveRight);
+                intervalXDirection = "";
+            }
+        }
+
+        if (e.clientY < 20 + 50) {
+            if (intervalYDirection !== "up") {
+                moveUp = setInterval(moveMap, 40, "up");
+                intervalYDirection = "up";
+            }
+        } else {
+            if (intervalYDirection === "up") {
+                clearInterval(moveUp);
+                intervalYDirection = "";
+            }
+        }
+
+        if (e.clientY > 570 - 50) {
+            if (intervalYDirection !== "down") {
+                moveDown = setInterval(moveMap, 40, "down");
+                intervalYDirection = "down";
+            }
+        } else {
+            if (intervalYDirection === "down") {
+                clearInterval(moveDown);
+                intervalYDirection = "";
+            }
+        }
+    }
+    function moveMap(param) {
+        switch (param) {
+            case "left":
+                screenXPos += 12;
+                break;
+            case "right":
+                screenXPos -= 12;
+                break;
+            case "up":
+                screenYPos += 12;
+                break;
+            case "down":
+                screenYPos -= 12;
+                break;
+        }
+        main.style.left = screenXPos + "px";
+        main.style.top = screenYPos + "px";
+        for (let hex of manyHexInfo) {
+            if (hex.deployed) {
+                if ((hex.x + screenXPos) < -430 || (hex.x + screenXPos) > 1220 || (hex.y + screenYPos) < -440 || (hex.y + screenYPos) > 920) {
+                    hex.deployed = false;
+                    hex.div.remove();
+                }
+            }
+            createHexTiles(hex);
+        }
+        moveMiniMapBorder();
     }
 
     function createHexTiles(hex) {
-        if ((hex.x + screenXPos) > -150 && (hex.x + screenXPos) < 940 && (hex.y + screenYPos) > -160 && (hex.y + screenYPos) < 640 && !hex.deployed && hex.discovererd[playerid]) {
+        if ((hex.x + screenXPos) > -450 && (hex.x + screenXPos) < 1240 && (hex.y + screenYPos) > -460 && (hex.y + screenYPos) < 940 && !hex.deployed && hex.discovererd[playerid]) {
             hex.deployed = true;
             let divHex = document.createElement("div");
             divHex.className = hex.hexType.class;
@@ -136,6 +218,9 @@ function setup() {
             divHex.style.left = hex.x + "px";
             divHex.style.top = hex.y + "px";
             hex.div = divHex;
+            /*if (focusunit !== undefined && hex.canBeWalkedBy[focusunit.id] >= 0) {
+                hex.div.style.opacity = 0.5; //problemet her er at tilesa ikke finnes før du drar, kan prøve med større load radius rundt skjerm
+            }*/
         }
     }
 
@@ -243,9 +328,6 @@ function setup() {
             }
         }
     }
-
-    let focusunit = undefined;
-    let focustile = undefined;
 
     document.getElementById("endturn").addEventListener("click", endturn);
     function endturn() {
