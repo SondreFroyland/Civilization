@@ -117,7 +117,7 @@ function setup() {
             main.style.top = screenYPos + "px";
             for (let hex of manyHexInfo) {
                 if (hex.deployed) {
-                    if ((hex.x + screenXPos) < -130 || (hex.x + screenXPos) > 920 || (hex.y + screenYPos) < -140 || (hex.y + screenYPos) > 620) {
+                    if ((hex.x + screenXPos) < -330 || (hex.x + screenXPos) > 1120 || (hex.y + screenYPos) < -340 || (hex.y + screenYPos) > 820) {
                         hex.deployed = false;
                         hex.div.remove();
                     }
@@ -174,6 +174,8 @@ function setup() {
             }
         }
     }
+
+    //need to prevent screen from scrolling when taking mouse out of border, if i need to select anything in UI
     function moveMap(param) {
         switch (param) {
             case "left":
@@ -193,7 +195,7 @@ function setup() {
         main.style.top = screenYPos + "px";
         for (let hex of manyHexInfo) {
             if (hex.deployed) {
-                if ((hex.x + screenXPos) < -430 || (hex.x + screenXPos) > 1220 || (hex.y + screenYPos) < -440 || (hex.y + screenYPos) > 920) {
+                if ((hex.x + screenXPos) < -330 || (hex.x + screenXPos) > 1120 || (hex.y + screenYPos) < -340 || (hex.y + screenYPos) > 820) {
                     hex.deployed = false;
                     hex.div.remove();
                 }
@@ -204,7 +206,7 @@ function setup() {
     }
 
     function createHexTiles(hex) {
-        if ((hex.x + screenXPos) > -450 && (hex.x + screenXPos) < 1240 && (hex.y + screenYPos) > -460 && (hex.y + screenYPos) < 940 && !hex.deployed && hex.discovererd[playerid]) {
+        if ((hex.x + screenXPos) > -350 && (hex.x + screenXPos) < 1140 && (hex.y + screenYPos) > -360 && (hex.y + screenYPos) < 840 && !hex.deployed && hex.discovererd[playerid]) {
             hex.deployed = true;
             let divHex = document.createElement("div");
             divHex.className = hex.hexType.class;
