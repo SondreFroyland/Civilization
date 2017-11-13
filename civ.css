@@ -1,9 +1,50 @@
+#canvasdiv {
+    position: absolute;
+    top: 20px;
+    left: 950px;
+    width: 304px;
+    height: 304px;
+    overflow: hidden;
+}
+
+#minimap {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    border: 2px solid black;
+}
+
+#minimapborder {
+    position: absolute;
+    top: 50px;
+    left: 200px;
+    width: 30px;
+    height: 50px;
+    z-index: 10;
+    border: 2px solid black;
+}
+
 .unit {
     position: absolute;
     width: 100px;
     height: 100px;
-    background-image: url(havn.png);
+    background-image: url(units.png);
     z-index: 5;
-    background-size: contain;
+    background-size: 900%;
     color: red;
+}
+
+.boat {
+    background-position-x: -499px;
+    background-position-y: -304px;
+}
+
+.scout {
+    background-position-x: -297px;
+    background-position-y: -600px;
+}
+
+.settler {
+    background-position-x: -95px;
+    background-position-y: -500px;
 }
