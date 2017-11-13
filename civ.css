@@ -48,6 +48,11 @@
     background-position-x: -95px;
     background-position-y: -500px;
 }
+#twitter {
+    position: relative;
+    top: 570px;
+    left: 835px;
+}
 #endturn {
     position: absolute;
     top: 580px;
