@@ -61,6 +61,21 @@ kanskje liv, attack, defence
 
 function setup() {
 
+    setInterval(playsound, 1000);
+    
+    let soundcount = 0;
+    function playsound() {
+        soundcount++;
+        if(soundcount === 1) {
+            var audio = new Audio("backgroundMusic.mp3");
+            audio.volume = 0.2;
+            audio.play();
+        }
+        if(soundcount === 220) {
+            soundcount = 0;
+        }
+    }
+
     let playerid = 0;
 
     let hexØrken = {
