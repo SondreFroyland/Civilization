@@ -62,16 +62,16 @@ kanskje liv, attack, defence
 function setup() {
 
     setInterval(playsound, 1000);
-    
+
     let soundcount = 0;
     function playsound() {
         soundcount++;
-        if(soundcount === 1) {
+        if (soundcount === 1) {
             var audio = new Audio("backgroundMusic.mp3");
             audio.volume = 0.2;
             audio.play();
         }
-        if(soundcount === 220) {
+        if (soundcount === 220) {
             soundcount = 0;
         }
     }
@@ -108,13 +108,13 @@ function setup() {
 
     window.ondragstart = function () { return false; }
 
-    let main = document.getElementById("main");
+    let playField = document.getElementById("playField");
     let screenXPos = 0;
     let screenYPos = 0;
     //for at forsjellige spillere skal ha forsjellig startposisjon, er det bare å forandre disse
     //vil sansyneligvis generere en settler for hver spiller på en landtile, discovere området rundt, så si at screenX og screenY skal være sentrert på settleren
-    main.style.left = screenXPos + "px";
-    main.style.top = screenYPos + "px";
+    playField.style.left = screenXPos + "px";
+    playField.style.top = screenYPos + "px";
 
     let focusunit = undefined;
     let focustile = undefined;
@@ -122,14 +122,16 @@ function setup() {
     let intervalXDirection = "";
     let intervalYDirection = "";
 
+    let border = document.getElementById("border");
     border.addEventListener("mousemove", flytt);
+
     function flytt(e) {
         moveMiniMapBorder();
         if (e.buttons === 1) {
             screenXPos = screenXPos + 2 * e.movementX;
             screenYPos = screenYPos + 2 * e.movementY;
-            main.style.left = screenXPos + "px";
-            main.style.top = screenYPos + "px";
+            playField.style.left = screenXPos + "px";
+            playField.style.top = screenYPos + "px";
             for (let hex of manyHexInfo) {
                 if (hex.deployed) {
                     if ((hex.x + screenXPos) < -330 || (hex.x + screenXPos) > 1120 || (hex.y + screenYPos) < -340 || (hex.y + screenYPos) > 820) {
@@ -143,7 +145,7 @@ function setup() {
 
         if (e.clientX < 100 + 50) {
             if (intervalXDirection !== "left") {
-                moveLeft = setInterval(moveMap, 40, "left");
+                moveLeft = setInterval(moveMap, 30, "left");
                 intervalXDirection = "left";
             }
         } else {
@@ -155,7 +157,7 @@ function setup() {
 
         if (e.clientX > 900 - 50) {
             if (intervalXDirection !== "right") {
-                moveRight = setInterval(moveMap, 40, "right");
+                moveRight = setInterval(moveMap, 30, "right");
                 intervalXDirection = "right";
             }
         } else {
@@ -167,7 +169,7 @@ function setup() {
 
         if (e.clientY < 20 + 50) {
             if (intervalYDirection !== "up") {
-                moveUp = setInterval(moveMap, 40, "up");
+                moveUp = setInterval(moveMap, 30, "up");
                 intervalYDirection = "up";
             }
         } else {
@@ -179,7 +181,7 @@ function setup() {
 
         if (e.clientY > 570 - 50) {
             if (intervalYDirection !== "down") {
-                moveDown = setInterval(moveMap, 40, "down");
+                moveDown = setInterval(moveMap, 30, "down");
                 intervalYDirection = "down";
             }
         } else {
@@ -190,24 +192,26 @@ function setup() {
         }
     }
 
+
     //need to prevent screen from scrolling when taking mouse out of border, if i need to select anything in UI
     function moveMap(param) {
+        console.log();
         switch (param) {
             case "left":
-                screenXPos += 12;
+                screenXPos += 16;
                 break;
             case "right":
-                screenXPos -= 12;
+                screenXPos -= 16;
                 break;
             case "up":
-                screenYPos += 12;
+                screenYPos += 16;
                 break;
             case "down":
-                screenYPos -= 12;
+                screenYPos -= 16;
                 break;
         }
-        main.style.left = screenXPos + "px";
-        main.style.top = screenYPos + "px";
+        playField.style.left = screenXPos + "px";
+        playField.style.top = screenYPos + "px";
         for (let hex of manyHexInfo) {
             if (hex.deployed) {
                 if ((hex.x + screenXPos) < -330 || (hex.x + screenXPos) > 1120 || (hex.y + screenYPos) < -340 || (hex.y + screenYPos) > 820) {
@@ -220,6 +224,30 @@ function setup() {
         moveMiniMapBorder();
     }
 
+    let main = document.getElementById("main");
+    main.addEventListener("mousemove", outOfPlayField);
+
+    function outOfPlayField(e) {
+        if (e.clientX > 900 || e.clientX < 100 || e.clientY < 20 || e.clientY > 570) {
+            if (intervalXDirection === "right") {
+                clearInterval(moveRight);
+                intervalXDirection = "";
+            }
+            if (intervalXDirection === "left") {
+                clearInterval(moveLeft);
+                intervalXDirection = "";
+            }
+            if (intervalYDirection === "up") {
+                clearInterval(moveUp);
+                intervalYDirection = "";
+            }
+            if (intervalYDirection === "down") {
+                clearInterval(moveDown);
+                intervalYDirection = "";
+            }
+        }
+    }
+
     function createHexTiles(hex) {
         if ((hex.x + screenXPos) > -350 && (hex.x + screenXPos) < 1140 && (hex.y + screenYPos) > -360 && (hex.y + screenYPos) < 840 && !hex.deployed && hex.discovererd[playerid]) {
             hex.deployed = true;
@@ -229,15 +257,15 @@ function setup() {
             divHexTop.className = "hexTop";
             let divHexBot = document.createElement("div");
             divHexBot.className = "hexBottom";
-            main.appendChild(divHex);
+            playField.appendChild(divHex);
             divHex.appendChild(divHexTop);
             divHex.appendChild(divHexBot);
             divHex.style.left = hex.x + "px";
             divHex.style.top = hex.y + "px";
             hex.div = divHex;
-            /*if (focusunit !== undefined && hex.canBeWalkedBy[focusunit.id] >= 0) {
-                hex.div.style.opacity = 0.5; //problemet her er at tilesa ikke finnes før du drar, kan prøve med større load radius rundt skjerm
-            }*/
+            if (focusunit !== undefined && hex.canBeWalkedBy[focusunit.id] >= 0) {
+                hex.div.style.opacity = 0.5; //problemet her er at tilesa ikke finnes før du drar, kan prøve med større load radius rundt skjerm, dette tar å fikser problemet med å unloade så loade tiles som en kan gå på da
+            }
         }
     }
 
@@ -308,7 +336,7 @@ function setup() {
     }
     let scoutUnit = {
         stringType: "scout",
-        moves: 10,
+        moves: 3,
         vision: 4,
         life: 50,
         cantWalkOn: ["sjø"]
@@ -322,7 +350,7 @@ function setup() {
     }
     let testUnit = {
         stringType: "test",
-        moves: 20,
+        moves: 6,
         vision: 5,
         life: 50,
         cantWalkOn: []
@@ -335,7 +363,7 @@ function setup() {
         newUnitDiv.className = type.stringType + " unit";
         newUnitDiv.style.left = x + "px";
         newUnitDiv.style.top = y + "px";
-        main.appendChild(newUnitDiv);
+        playField.appendChild(newUnitDiv);
         let newUnit = new unit(newUnitDiv, x, y, type, player, unitid);
         unitid++;
         units.push(newUnit);
