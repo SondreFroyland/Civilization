@@ -55,6 +55,9 @@ Ha en tabell over unittypes, med info om hvor mange tiles de kan gå, om de kan 
 kanskje liv, attack, defence
 */
 
+//^^helt enig -sondre
+
+
 
 
 //har visst mye ovenfor utenfor setup funksjonen, kan sikkert flytte noe inn, har flytta det, får se om det gjør noe
