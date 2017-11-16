@@ -56,6 +56,15 @@
     background-position-x: -95px;
     background-position-y: -500px;
 }
+
+.city {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background-image: url(storgressby.png);
+    background-size: contain;
+}
+
 #twitter {
     position: relative;
     top: 570px;
@@ -103,27 +112,46 @@
 #endturn:active {
 	top:581px;
 }
+
 @-moz-keyframes glowing {
     0% { background-color: #B20000; -moz-box-shadow: 0 0 3px #B20000; }
     50% { background-color: #FF0000; -moz-box-shadow: 0 0 40px #FF0000; }
     100% { background-color: #B20000; -moz-box-shadow: 0 0 3px #B20000; }
-  }
+}
   
-  @-o-keyframes glowing {
+@-o-keyframes glowing {
     0% { background-color: #B20000; box-shadow: 0 0 3px #B20000; }
     50% { background-color: #FF0000; box-shadow: 0 0 40px #FF0000; }
     100% { background-color: #B20000; box-shadow: 0 0 3px #B20000; }
-  }
+}
   
-  @keyframes glowing {
+@keyframes glowing {
     0% { background-color: #B20000; box-shadow: 0 0 3px #B20000; }
     50% { background-color: #FF0000; box-shadow: 0 0 40px #FF0000; }
     100% { background-color: #B20000; box-shadow: 0 0 3px #B20000; }
-  }
+}
   
-  #endturn {
+#endturn {
     -webkit-animation: glowing 1500ms infinite;
     -moz-animation: glowing 1500ms infinite;
     -o-animation: glowing 1500ms infinite;
     animation: glowing 1500ms infinite;
-  }
+}
+
+#uibuttons {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 80px;
+    height: 600px;
+}
+.uibutton {
+    width: 40px;
+    height: 40px;
+    margin: 10px;
+    background-color: red;
+}
+
+#button1, #button2, #button3, #button4 {
+    visibility: hidden;
+}
