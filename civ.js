@@ -29,6 +29,7 @@ class hexInfo {
         this.discovererd = []; //array containing information of what players have discovered the tile
         this.occupied = false;
         this.canBeWalkedBy = {};
+        this.cityBuilt = false; //eller om noe er bygd i det hele tatt, farms etc.
     }
 }
 
@@ -46,12 +47,20 @@ class unit {
 }
 
 class city {
-    constructor(div, x, y, player, cityid) {
+    constructor(div, x, y, player, cityid, isNearWater, tile) {
         this.div = div;
         this.x = x;
         this.y = y;
         this.player = player;
         this.id = cityid;
+        this.pop = 1;
+        this.buildingsBuilt = []; //adde ting i denne arrayen ettersom ting blir bygget
+        this.isNearWater = isNearWater
+        this.production = 12;
+        this.currentlyProducing;
+        this.storedProduction = 20;
+        this.turnsLeft;
+        this.tile = tile;
     }
 }
 
@@ -87,6 +96,8 @@ function setup() {
     }
 
     let playerid = 0;
+    let playerGold = 60;
+    let playerScience = 0;
 
     let hexØrken = {
         class: "ørken",
@@ -344,29 +355,39 @@ function setup() {
         moves: 2,
         vision: 3,
         life: 100,
-        cantWalkOn: ["sjø", "fjell"]
+        cantWalkOn: ["sjø", "fjell"],
+        productionCost: 40,
+        needsWaterTile: false
     }
     let scoutUnit = {
         stringType: "scout",
         moves: 3,
         vision: 4,
         life: 50,
-        cantWalkOn: ["sjø"]
+        cantWalkOn: ["sjø"],
+        productionCost: 20,
+        needsWaterTile: false
     }
     let boatUnit = {
         stringType: "boat",
         moves: 4,
         vision: 4,
         life: 50,
-        cantWalkOn: ["gress", "fjell", "ørken"]
+        cantWalkOn: ["gress", "fjell", "ørken"],
+        productionCost: 60,
+        needsWaterTile: true
     }
     let testUnit = {
         stringType: "test",
         moves: 6,
         vision: 5,
         life: 50,
-        cantWalkOn: []
+        cantWalkOn: [],
+        productionCost: 40,
+        needsWaterTile: false
     }
+
+    let unitTypes = [settlerUnit, scoutUnit, boatUnit, testUnit];
 
     let unitid = 0;
     function createUnit(type, x, y, player) {
@@ -389,11 +410,20 @@ function setup() {
     function createCity() {
         let newCityDiv = document.createElement("div");
         newCityDiv.id = cityid;
+        cityid++;
         newCityDiv.className = "city";
-        newCityDiv.style.left = focusunit.x + "px";
-        newCityDiv.style.top = focusunit.y + "px";
+        let x = focusunit.x;
+        let y = focusunit.y;
+        let isNearWater = false;
+        for (let hex of manyHexInfo) {
+            if (hex.hexType.class === "sjø" && distance(x, y, hex.x, hex.y, 0, 0) <= 100) {
+                isNearWater = true;
+            }
+        }
+        newCityDiv.style.left = x + "px";
+        newCityDiv.style.top = y + "px";
         playField.appendChild(newCityDiv);
-        let newCity = new city(newCityDiv, focusunit.x, focusunit.y, playerid, cityid);
+        let newCity = new city(newCityDiv, x, y, playerid, cityid, isNearWater, focustile);
         cities.push(newCity);
 
         for (let hex of manyHexInfo) {
@@ -412,6 +442,29 @@ function setup() {
 
     document.getElementById("endturn").addEventListener("click", endturn);
     function endturn() {
+        for (let city of cities) {
+            city.storedProduction += city.production;
+            if (city.currentlyProducing !== undefined && city.storedProduction >= city.currentlyProducing.productionCost) {
+                if (city.currentlyProducing.vision !== undefined) {
+                    //have created a unit, need to check if tile is occupied
+                    if (!city.tile.occupied) {
+                        createUnit(city.currentlyProducing, city.x, city.y, playerid);
+                        city.storedProduction -= city.currentlyProducing.productionCost;
+                        city.currentlyProducing = undefined;
+                    } else {
+                        console.log("tile is occupied");
+                    }
+                } else {
+                    //have built a building
+                    city.buildingsBuilt.push(city.currentlyProducing);
+                    city.storedProduction -= city.currentlyProducing.productionCost;
+                    city.currentlyProducing = undefined;
+                }
+            }
+            if (city.currentlyProducing !== undefined) {
+                city.turnsLeft = Math.ceil((city.currentlyProducing.productionCost - city.storedProduction) / city.production);
+            }
+        }
         for (let n of units) {
             if (focusunit !== undefined) {
                 focusunit.div.style.opacity = 1;
@@ -424,7 +477,7 @@ function setup() {
                 focusunit = undefined;
             }
             focustile = undefined;
-            if(focuscity !== undefined) {
+            if (focuscity !== undefined) {
                 focuscity.div.style.opacity = 1;
                 focuscity = undefined;
             }
@@ -432,6 +485,7 @@ function setup() {
             //maybe check here for units that still have movement left before ending
             n.currentmoves = n.type.moves;
         }
+        //when turn ends, calculate how much gold, science, city growth etc, will happen accros all cities
     }
 
     //kanskje legge til at du kan dra uten å fjerne selection av tiles
@@ -439,7 +493,6 @@ function setup() {
     border.addEventListener("click", selectUnit);
     function selectUnit(e) { // in some way use this function to make UI for different units
         let div = e.path[0];
-        changeUI(div);
         if (div.classList.contains("unit") && focusunit === undefined) {
             for (let n of units) {
                 if (div === n.div) {
@@ -472,9 +525,7 @@ function setup() {
                                         }
                                     }
                                 }
-
                             }
-
                         }
                     }
                     for (let searchTile of searchingTiles) {
@@ -519,6 +570,7 @@ function setup() {
                 focuscity = undefined;
             }
         }
+        changeUI(div);
     }
 
     let uibutton1 = document.getElementById("button1");
@@ -529,14 +581,68 @@ function setup() {
     //uibutton3.addEventListener("click", button3Click);
     let uibutton4 = document.getElementById("button4");
     //uibutton4.addEventListener("click", button4Click);
+    let cityui = document.getElementById("cityui");
+
+    //bør ha egen UI under minimap for hva som kan gjøres i byene, kjøpe units etc
+    //ha en array med units og bygninger som kan bli kjøpt, og pushe inn i denne arrayen etterhvert som nye ting blir researcha
+
+    let aqueduct = {
+        stringType: "aqueduct",
+        productionCost: 30,
+        foodBonus: 2,
+        scienceBonus: 0
+    }
+    let univerity = {
+        stringType: "university",
+        productionCost: 40,
+        foodBonus: 0,
+        scienceBonus: 3
+    }
+    let garden = {
+        stringType: "garden",
+        productionCost: 50,
+        foodBonus: 3,
+        scienceBonus: 0
+    }
+    let buildingsAvailible = [aqueduct, univerity, garden];
+
+    let currentlyBuilding = document.getElementById("currentlybuilding");
+
+    let goldProductionToggle = document.getElementById("purchaseswitch");
+    goldProductionToggle.addEventListener("click", togglePurchaseMethod);
+
+    let purchaseMethod = "production";
+    function togglePurchaseMethod() {
+        if (purchaseMethod === "production") {
+            purchaseMethod = "gold";
+            goldProductionToggle.innerHTML = "Buy With Production";
+        } else {
+            purchaseMethod = "production";
+            goldProductionToggle.innerHTML = "Buy With Gold";
+        }
+        changeUI(focuscity.div);
+    }
 
     let uiSelected = "";
 
+    let unitPurchaseDiv = document.getElementById("units");
+    let unitHeaderDiv = document.getElementById("unitheader");
+
+    let buildingPurchaseDiv = document.getElementById("buildings");
+    let buildingHeaderDiv = document.getElementById("buildingheader");
+
+    let selectInfo = document.getElementById("selectedinfo");
+
+    let goldDiv = document.getElementById("gold");
+
     function changeUI(div) {
+        goldDiv.innerHTML = "Gold: " + playerGold;
         uibutton1.style.visibility = "hidden";
         uibutton2.style.visibility = "hidden";
         uibutton3.style.visibility = "hidden";
         uibutton4.style.visibility = "hidden";
+        cityui.style.visibility = "hidden";
+        selectInfo.style.visibility = "hidden";
         uiSelected = "";
         if (div === undefined) {
             return;
@@ -548,12 +654,60 @@ function setup() {
             uibutton1.style.visibility = "visible";
 
         }
+        if (div.classList.contains("unit")) {
+            selectInfo.style.visibility = "visible";
+            selectInfo.innerHTML = "Moves Left: " + focusunit.currentmoves; //maybe also display health, attack etc. here
+        }
         if (div.classList.contains("city")) {
             //just selected a city
             uiSelected = "city";
-            button1.innerHTML = "create scout"
-            uibutton1.style.visibility = "visible";
+            selectInfo.style.visibility = "visible";
+            selectInfo.innerHTML = "Stored Production: " + focuscity.storedProduction + "<br> Population: " + focuscity.pop;
 
+            while (unitPurchaseDiv.lastChild !== unitHeaderDiv) {
+                unitPurchaseDiv.removeChild(unitPurchaseDiv.lastChild);
+            }
+            while (buildingPurchaseDiv.lastChild !== buildingHeaderDiv) {
+                buildingPurchaseDiv.removeChild(buildingPurchaseDiv.lastChild);
+            }
+
+            cityui.style.visibility = "visible";
+
+            for (let u of unitTypes) {
+                if (u.needsWaterTile) {
+                    if (!focuscity.isNearWater) {
+                        continue; //prevents boats from being made in landcities
+                    }
+                }
+                newPurchaseOption = document.createElement("div");
+                newPurchaseOption.className = "unitbuyoption";
+                newPurchaseOption.id = u.stringType;
+                unitPurchaseDiv.appendChild(newPurchaseOption);
+                if (purchaseMethod === "gold") {
+                    newPurchaseOption.innerHTML = u.stringType + ": Costs " + u.productionCost + " Gold";
+                } else {
+                    newPurchaseOption.innerHTML = u.stringType + ": Takes " + Math.ceil(u.productionCost / focuscity.production) + " turns to build";
+                }
+            }
+
+            for (let b of buildingsAvailible) {
+                if (focuscity.buildingsBuilt.indexOf(b) === -1) { //kanskje legge til en sjekk om byen ligger med vann her og, om noen bygninger trenger det
+                    newPurchaseOption = document.createElement("div");
+                    newPurchaseOption.className = "buildingbuyoption";
+                    newPurchaseOption.id = b.stringType;
+                    buildingPurchaseDiv.appendChild(newPurchaseOption);
+                    if (purchaseMethod === "gold") {
+                        newPurchaseOption.innerHTML = b.stringType + ": Costs " + b.productionCost + " Gold";
+                    } else {
+                        newPurchaseOption.innerHTML = b.stringType + ": Takes " + Math.ceil(b.productionCost / focuscity.production) + " turns to build";
+                    }
+                }
+            }
+            if (focuscity.currentlyProducing !== undefined) {
+                currentlyBuilding.innerHTML = "Building " + focuscity.currentlyProducing.stringType + ", " + focuscity.turnsLeft + " turns left";
+            } else {
+                currentlyBuilding.innerHTML = "Choose Something To Start Building";
+            }
         }
     }
 
@@ -565,14 +719,57 @@ function setup() {
                 console.log("u need to wait another turn");
             }
         }
-        if (uiSelected === "city") {
+        /*if (uiSelected === "city") {
             if (!focustile.occupied) {
                 createUnit(scoutUnit, focuscity.x, focuscity.y, playerid);
             } else {
                 console.log("you have to move a unit away from your city");
+            } //har en egen UI for city functions
+        }*/
+    }
+
+    let cityUiBorder = document.getElementById("scrollable");
+    cityUiBorder.addEventListener("click", cityPurchase);
+
+    function cityPurchase(e) {
+        let div = e.path[0];
+        if (div.classList.contains("unitbuyoption") || div.classList.contains("buildingbuyoption")) {
+            let tofind;
+            for (let i of buildingsAvailible) {
+                if (i.stringType === div.id) {
+                    tofind = i;
+                }
+            }
+            for (let i of unitTypes) {
+                if (i.stringType === div.id) {
+                    tofind = i;
+                }
+            }
+            if (purchaseMethod === "production") {
+                focuscity.currentlyProducing = tofind;
+                focuscity.turnsLeft = Math.ceil((tofind.productionCost - focuscity.storedProduction) / focuscity.production);
+                currentlyBuilding.innerHTML = "Building " + focuscity.currentlyProducing.stringType + ", " + focuscity.turnsLeft + " turns left";
+            } else {
+                //purchasing with gold instead
+                if (playerGold >= tofind.productionCost) {
+                    if (div.classList.contains("unitbuyoption")) {
+                        if (!focustile.occupied) {
+                            createUnit(tofind, focuscity.x, focuscity.y, playerid);
+                            playerGold -= tofind.productionCost;
+                        } else {
+                            console.log("tile is occupied");
+                        }
+                    } else {
+                        //buying a building for gold
+                    }
+                } else {
+                    console.log("player does not have enough money");
+                }
             }
         }
+        changeUI(focuscity.div);
     }
+
 
     border.addEventListener("contextmenu", rightClick);
     function rightClick(e) {
@@ -587,7 +784,7 @@ function setup() {
                 if (hex.deployed) {
                     if (hex.canBeWalkedBy[focusunit.id] <= focusunit.currentmoves) {
                         if (hex.x === parseFloat(div.style.left) && hex.y === parseFloat(div.style.top)) {
-                            if (!hex.occupied) { //why tf isnt this occupied shit working????
+                            if (!hex.occupied) {
                                 hex.occupied = true;
                                 focusunit.x = parseFloat(div.style.left);
                                 focusunit.y = parseFloat(div.style.top);
@@ -771,4 +968,5 @@ function setup() {
     }
     drawMiniMap();
     moveMiniMapBorder();
+    changeUI();
 }
