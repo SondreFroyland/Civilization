@@ -45,6 +45,16 @@ class unit {
     }
 }
 
+class city {
+    constructor(div, x, y, player, cityid) {
+        this.div = div;
+        this.x = x;
+        this.y = y;
+        this.player = player;
+        this.id = cityid;
+    }
+}
+
 /* Om det trengs å holde track på player som har discovera tiles, player sin view av hvilke tiles som kan flyttes til(opacity):
 Om det går an i firebase å velge hva for noe informasjon som skal sendes til andre, er det bare å ikke sende info om hvilke tiles de andre trykker på og får til å lyse opp, og hvilke tiles de har discovera, det trenger bare hver player å vite sin egen informasjon om
 det som trengs å sendes(og holdes track på hvilken player det hører til) er byer, units og unitmovements, unitcreations etc.
@@ -121,6 +131,7 @@ function setup() {
 
     let focusunit = undefined;
     let focustile = undefined;
+    let focuscity = undefined;
 
     let intervalXDirection = "";
     let intervalYDirection = "";
@@ -198,7 +209,6 @@ function setup() {
 
     //need to prevent screen from scrolling when taking mouse out of border, if i need to select anything in UI
     function moveMap(param) {
-        console.log();
         switch (param) {
             case "left":
                 screenXPos += 16;
@@ -255,11 +265,11 @@ function setup() {
         if ((hex.x + screenXPos) > -350 && (hex.x + screenXPos) < 1140 && (hex.y + screenYPos) > -360 && (hex.y + screenYPos) < 840 && !hex.deployed && hex.discovererd[playerid]) {
             hex.deployed = true;
             let divHex = document.createElement("div");
-            divHex.className = hex.hexType.class;
+            divHex.className = hex.hexType.class + " tile";
             let divHexTop = document.createElement("div");
-            divHexTop.className = "hexTop";
+            divHexTop.className = "hexTop tile";
             let divHexBot = document.createElement("div");
-            divHexBot.className = "hexBottom";
+            divHexBot.className = "hexBottom tile";
             playField.appendChild(divHex);
             divHex.appendChild(divHexTop);
             divHex.appendChild(divHexBot);
@@ -275,6 +285,8 @@ function setup() {
     let manyHexInfo = [];
 
     let units = [];
+
+    let cities = [];
 
     function createTile(i, j) {
 
@@ -376,10 +388,50 @@ function setup() {
             }
         }
     }
+    let cityid = 0;
+    function createCity() {
+        let newCityDiv = document.createElement("div");
+        newCityDiv.id = cityid;
+        newCityDiv.className = "city";
+        newCityDiv.style.left = focusunit.x + "px";
+        newCityDiv.style.top = focusunit.y + "px";
+        playField.appendChild(newCityDiv);
+        let newCity = new city(newCityDiv, focusunit.x, focusunit.y, playerid, cityid);
+        cities.push(newCity);
+
+        for (let hex of manyHexInfo) {
+            if (hex.canBeWalkedBy[focusunit.id] >= 0) {
+                hex.canBeWalkedBy[focusunit.id] = undefined;
+                hex.div.style.opacity = 1;
+            }
+        }
+        focustile.occupied = false;
+        focusunit.div.remove();
+        units.splice(units.indexOf(focusunit), 1);
+        focusunit = undefined;
+        focustile = undefined;
+        changeUI();
+    }
 
     document.getElementById("endturn").addEventListener("click", endturn);
     function endturn() {
         for (let n of units) {
+            if (focusunit !== undefined) {
+                focusunit.div.style.opacity = 1;
+                for (let hex of manyHexInfo) {
+                    if (hex.canBeWalkedBy[focusunit.id] >= 0) {
+                        hex.canBeWalkedBy[focusunit.id] = undefined;
+                        hex.div.style.opacity = 1;
+                    }
+                }
+                focusunit = undefined;
+            }
+            focustile = undefined;
+            if(focuscity !== undefined) {
+                focuscity.div.style.opacity = 1;
+                focuscity = undefined;
+            }
+            changeUI();
             //maybe check here for units that still have movement left before ending
             n.currentmoves = n.type.moves;
         }
@@ -388,8 +440,9 @@ function setup() {
     //kanskje legge til at du kan dra uten å fjerne selection av tiles
     //masse for loops lager mye lag, kanskje det kan kuttes ned på dem på en eller annen måte...
     border.addEventListener("click", selectUnit);
-    function selectUnit(e) {
+    function selectUnit(e) { // in some way use this function to make UI for different units
         let div = e.path[0];
+        changeUI(div);
         if (div.classList.contains("unit") && focusunit === undefined) {
             for (let n of units) {
                 if (div === n.div) {
@@ -447,8 +500,79 @@ function setup() {
                 focusunit = undefined;
                 focustile = undefined;
             }
-            if (e.path[0].classList.contains("unit")) {
+            if (div.classList.contains("unit")) {
                 selectUnit(e);
+            }
+        }
+        if (div.classList.contains("city")) {
+            div.style.opacity = 0.8;
+            for (let n of cities) {
+                if (n.div === div) {
+                    focuscity = n;
+                }
+            }
+            for (let hex of manyHexInfo) {
+                if (focuscity.x === hex.x && focuscity.y === hex.y) {
+                    focustile = hex;
+                }
+            }
+        } else {
+            if (focuscity !== undefined) {
+                focuscity.div.style.opacity = 1;
+                focuscity = undefined;
+            }
+        }
+    }
+
+    let uibutton1 = document.getElementById("button1");
+    uibutton1.addEventListener("click", button1Click);
+    let uibutton2 = document.getElementById("button2");
+    //uibutton2.addEventListener("click", button2Click);
+    let uibutton3 = document.getElementById("button3");
+    //uibutton3.addEventListener("click", button3Click);
+    let uibutton4 = document.getElementById("button4");
+    //uibutton4.addEventListener("click", button4Click);
+
+    let uiSelected = "";
+
+    function changeUI(div) {
+        uibutton1.style.visibility = "hidden";
+        uibutton2.style.visibility = "hidden";
+        uibutton3.style.visibility = "hidden";
+        uibutton4.style.visibility = "hidden";
+        uiSelected = "";
+        if (div === undefined) {
+            return;
+        }
+        if (div.classList.contains("settler")) {
+            //just selected a settler
+            uiSelected = "settler";
+            button1.innerHTML = "found city";
+            uibutton1.style.visibility = "visible";
+
+        }
+        if (div.classList.contains("city")) {
+            //just selected a city
+            uiSelected = "city";
+            button1.innerHTML = "create scout"
+            uibutton1.style.visibility = "visible";
+
+        }
+    }
+
+    function button1Click() {
+        if (uiSelected === "settler") {
+            if (focusunit.currentmoves > 0) {
+                createCity();
+            } else {
+                console.log("u need to wait another turn");
+            }
+        }
+        if (uiSelected === "city") {
+            if (!focustile.occupied) {
+                createUnit(scoutUnit, focuscity.x, focuscity.y, playerid);
+            } else {
+                console.log("you have to move a unit away from your city");
             }
         }
     }
@@ -459,6 +583,7 @@ function setup() {
         if (div.className === "hexTop" || div.className === "hexBottom") {
             div = e.path[1];
         }
+        changeUI();
         e.preventDefault();
         if (focusunit !== undefined) {
             for (let hex of manyHexInfo) {
@@ -499,6 +624,10 @@ function setup() {
             focusunit.div.style.opacity = 1;
             focusunit = undefined;
             focustile = undefined;
+        }
+        if (focuscity !== undefined) {
+            focuscity.div.style.opacity = 1;
+            focuscity = undefined;
         }
     }
     createUnit(settlerUnit, 300, 172, playerid);
