@@ -481,10 +481,10 @@ function setup() {
                 focuscity.div.style.opacity = 1;
                 focuscity = undefined;
             }
-            changeUI();
             //maybe check here for units that still have movement left before ending
             n.currentmoves = n.type.moves;
         }
+        changeUI();
         //when turn ends, calculate how much gold, science, city growth etc, will happen accros all cities
     }
 
@@ -774,9 +774,11 @@ function setup() {
     border.addEventListener("contextmenu", rightClick);
     function rightClick(e) {
         let div = e.path[0];
-        if (div.className === "hexTop" || div.className === "hexBottom") {
+        console.log(div);
+        if (div.classList.contains("hexTop") || div.classList.contains("hexBottom")) {
             div = e.path[1];
         }
+        console.log(div);
         changeUI();
         e.preventDefault();
         if (focusunit !== undefined) {
@@ -825,9 +827,9 @@ function setup() {
         }
     }
     createUnit(settlerUnit, 300, 172, playerid);
-    createUnit(scoutUnit, 400, 172, playerid);
+    /*createUnit(scoutUnit, 400, 172, playerid);
     createUnit(boatUnit, 200, 172, playerid);
-    createUnit(testUnit, 500, 172, playerid);
+    createUnit(testUnit, 500, 172, playerid);*/
 
     //using canvas to create minimap
     let canvas = document.getElementById("minimap");
