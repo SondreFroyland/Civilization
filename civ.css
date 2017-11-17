@@ -67,13 +67,14 @@
 
 #twitter {
     position: relative;
-    top: 570px;
+    top: 580px;
     left: 835px;
+    width: 60px;
 }
 #endturn {
     position: absolute;
     top: 580px;
-    left: 100px;
+    left: 800px;
     -moz-box-shadow:inset 0px 1px 0px 0px #f29c93;
 	-webkit-box-shadow:inset 0px 1px 0px 0px #f29c93;
 	box-shadow:inset 0px 1px 0px 0px #f29c93;
@@ -141,17 +142,83 @@
 #uibuttons {
     position: absolute;
     top: 20px;
-    left: 20px;
-    width: 80px;
+    left: 10px;
+    width: 90px;
     height: 600px;
 }
 .uibutton {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     margin: 10px;
     background-color: red;
 }
 
 #button1, #button2, #button3, #button4 {
     visibility: hidden;
+}
+
+#cityui {
+    position: absolute;
+    top: 340px;
+    left: 950px;
+    width: 300px;
+    height: 250px;
+    border: 2px solid black;
+}
+#scrollable {
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 300px;
+    height: 200px;
+    border: 1px solid black;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+#purchaseswitch {
+    position: absolute;
+    top: 212px;
+    height: 30px;
+}
+
+#currentlybuilding {
+    position: absolute;
+    top: 208px;
+    left: 150px;
+}
+
+#unitheader, #buildingheader {
+    width: 278px;
+    height: 25px;
+    border: 1px solid black;
+    font-size: 1.2em;
+}
+.unitbuyoption, .buildingbuyoption {
+    width: 278px;
+    height: 40px;
+    border: 1px solid black;
+    font-size: 1.2em;
+}
+
+#selectedinfo {
+    position: absolute;
+    top: 580px;
+    left: 10px;
+    width: 300px;
+    height: 50px;
+    border: 2px solid black;
+}
+
+#gold {
+    position: absolute;
+    left: 100px;
+    top: 0px;
+    font-size: 1.2em;
+}
+
+#science {
+    position: absolute;
+    left: 200px;
+    top: 0px;
+    font-size: 1.2em;
 }
