@@ -1,13 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-</head>
-<body>
-        Endringslogg
+     Endringslogg
         
         Nå er det mulig å founde byer på vann, bør ikke være mulig
         Bør også ikke være mulig å lage byer innenfor sånn 3-4 tiles? av hverandre altså
@@ -38,6 +29,3 @@
         
         Lage borders til byer, utvides med en tile for hver population.
             Vise grenser med farge f.eks.
-    
-</body>
-</html>
