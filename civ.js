@@ -394,7 +394,8 @@ function setup() {
         life: 100,
         cantWalkOn: ["sjø", "fjell"],
         productionCost: 40,
-        needsWaterTile: false
+        needsWaterTile: false,
+        uiimg: "Diverse/Settler_(Civ5).png"
     }
     let scoutUnit = {
         stringType: "scout",
@@ -403,7 +404,8 @@ function setup() {
         life: 50,
         cantWalkOn: ["sjø"],
         productionCost: 20,
-        needsWaterTile: false
+        needsWaterTile: false,
+        uiimg: "Diverse/Scout_(Civ5).png"
     }
     let boatUnit = {
         stringType: "boat",
@@ -412,7 +414,8 @@ function setup() {
         life: 50,
         cantWalkOn: ["gress", "fjell", "ørken"],
         productionCost: 60,
-        needsWaterTile: true
+        needsWaterTile: true,
+        uiimg: "Diverse/Work_boat_(Civ5).png"
     }
     let testUnit = {
         stringType: "test",
@@ -421,7 +424,8 @@ function setup() {
         life: 50,
         cantWalkOn: [],
         productionCost: 40,
-        needsWaterTile: false
+        needsWaterTile: false,
+        uiimg: "Diverse/Triteme_(Civ5).png"
     }
 
     let unitTypes = [settlerUnit, scoutUnit, boatUnit, testUnit];
@@ -693,7 +697,8 @@ function setup() {
         foodBonus: 2,
         productionBonus: 0,
         goldBonus: 0,
-        scienceBonus: 0
+        scienceBonus: 0,
+        uiimg: "Diverse/Aqueduct.png"
     }
     let univerity = {
         stringType: "university",
@@ -701,7 +706,8 @@ function setup() {
         foodBonus: 0,
         productionBonus: 0,
         goldBonus: 0,
-        scienceBonus: 3
+        scienceBonus: 3,
+        uiimg: "Diverse/University_civ.png"
     }
     let garden = {
         stringType: "garden",
@@ -709,7 +715,8 @@ function setup() {
         foodBonus: 3,
         productionBonus: 0,
         goldBonus: 0,
-        scienceBonus: 0
+        scienceBonus: 0,
+        uiimg: "Diverse/Garden.png"
     }
     let buildingsAvailible = [aqueduct, univerity, garden];
 
@@ -805,9 +812,10 @@ function setup() {
                 newPurchaseOption.id = u.stringType;
                 unitPurchaseDiv.appendChild(newPurchaseOption);
                 if (purchaseMethod === "gold") {
-                    newPurchaseOption.innerHTML = u.stringType + ": Costs " + u.productionCost + " Gold";
+                    newPurchaseOption.innerHTML = u.stringType + ": Costs " + u.productionCost + " Gold <img class='builduiimg' src=" + u.uiimg + ">";
+                    console.log(u.uiimg);
                 } else {
-                    newPurchaseOption.innerHTML = u.stringType + ": Takes " + Math.ceil(u.productionCost / focuscity.production) + " turns to build";
+                    newPurchaseOption.innerHTML = u.stringType + ": Takes " + Math.ceil(u.productionCost / focuscity.production) + " turns to build <img class='builduiimg' src=" + u.uiimg + ">";
                 }
             }
             for (let b of buildingsAvailible) {
@@ -817,9 +825,9 @@ function setup() {
                     newPurchaseOption.id = b.stringType;
                     buildingPurchaseDiv.appendChild(newPurchaseOption);
                     if (purchaseMethod === "gold") {
-                        newPurchaseOption.innerHTML = b.stringType + ": Costs " + b.productionCost + " Gold";
+                        newPurchaseOption.innerHTML = b.stringType + ": Costs " + b.productionCost + " Gold <img class='builduiimg' src=" + b.uiimg + ">";
                     } else {
-                        newPurchaseOption.innerHTML = b.stringType + ": Takes " + Math.ceil(b.productionCost / focuscity.production) + " turns to build";
+                        newPurchaseOption.innerHTML = b.stringType + ": Takes " + Math.ceil(b.productionCost / focuscity.production) + " turns to build <img class='builduiimg' src=" + b.uiimg + ">";
                     }
                 }
             }
@@ -1098,7 +1106,6 @@ function setup() {
 
     function moveMiniMapBorder() {
         if(focuscity !== undefined) {
-            console.log(focuscity.div);
         }
 
         let windowWidth;
