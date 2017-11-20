@@ -63,6 +63,7 @@
     height: 100px;
     background-image: url(storgressby.png);
     background-size: contain;
+    z-index: 2;
 }
 
 #twitter {
