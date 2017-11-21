@@ -51,7 +51,7 @@ class unit {
 }
 
 class city {
-    constructor(div, x, y, player, cityid, isNearWater, tile) {
+    constructor(div, x, y, player, cityid, isNearWater, tile, cityName) {
         this.div = div;
         this.x = x;
         this.y = y;
@@ -71,6 +71,7 @@ class city {
         this.turnsLeft;
         this.tile = tile;
         this.tileexpand = 0;
+        this.cityName = cityName;
     }
 }
 
@@ -330,7 +331,6 @@ function setup() {
                 }
                 if (hex.canBeClaimed === focuscity.id) {
                     hex.div.style.filter = "invert(30%)";
-                    console.log("hallo");
                 }
             }
         }
@@ -456,8 +456,19 @@ function setup() {
             }
         }
     }
+    let cityNames = ["Hong Kong", "Oslo", "Haraldstøttå", "Statane", "Capital"];
     let cityid = 0;
     function createCity() {
+        //check if there are any cities nearby
+        for (let city of cities) {
+            if (distance(focustile.x, focustile.y, city.x, city.y, 0, 0) <= 400) {
+                dialogue.innerHTML = "Can't build that close to another city (Min 5 tiles apart)";
+                timeoutIsGoing = false;
+                clearTimeout(dialogueTimeout);
+                changeUI();
+                return;
+            }
+        }
         let newCityDiv = document.createElement("div");
         newCityDiv.id = cityid;
         cityid++;
@@ -467,17 +478,20 @@ function setup() {
         let isNearWater = false;
         for (let hex of manyHexInfo) {
             if (distance(x, y, hex.x, hex.y, 0, 0) <= 100) {
-                hex.ownedByCity = cityid;
+                if (hex.ownedByCity === undefined) {
+                    hex.ownedByCity = cityid;
+                }
                 if (hex.hexType.class === "sjø") {
                     isNearWater = true;
                 }
             }
         }
+        newCityName = cityNames[Math.floor(Math.random()*cityNames.length)];
         focustile.cityBuilt = cityid;
         newCityDiv.style.left = x + "px";
         newCityDiv.style.top = y + "px";
         playField.appendChild(newCityDiv);
-        let newCity = new city(newCityDiv, x, y, playerid, cityid, isNearWater, focustile);
+        let newCity = new city(newCityDiv, x, y, playerid, cityid, isNearWater, focustile, newCityName);
         cities.push(newCity);
 
         for (let hex of manyHexInfo) {
@@ -493,6 +507,8 @@ function setup() {
         focustile = undefined;
         changeUI();
     }
+
+    let dialogue = document.getElementById("dialoguebox");
 
     document.getElementById("endturn").addEventListener("click", endturn);
     //deselect all units & cities
@@ -531,7 +547,27 @@ function setup() {
 
         for (let city of cities) {
             if (city.player === playerid) {
-                if (city.unnasigned > 0 || city.tileexpand > 0 || city.currentlyProducing === undefined) {
+                if(city.currentlyProducing === undefined) {
+                    dialogue.innerHTML = "You need to choose something for the city to produce"; //kanskje ha i infobox hvor mange idle citizens
+                    timeoutIsGoing = false;
+                    clearTimeout(dialogueTimeout);
+                    changeUI();
+                    selectUnit(city.div);
+                    return;
+                }
+                if(city.tileexpand > 0) {
+                    dialogue.innerHTML = "You need to expand the city's border"; //kanskje ha i infobox hvor mange idle citizens
+                    timeoutIsGoing = false;
+                    clearTimeout(dialogueTimeout);
+                    changeUI();
+                    selectUnit(city.div);
+                    return;
+                }
+                if (city.unnasigned > 0) {
+                    dialogue.innerHTML = "You need to assign all of the city's citizens to work on tiles"; //kanskje ha i infobox hvor mange idle citizens
+                    timeoutIsGoing = false;
+                    clearTimeout(dialogueTimeout);
+                    changeUI();
                     selectUnit(city.div);
                     return;
                 }
@@ -540,8 +576,11 @@ function setup() {
         for (let u of units) {
             if (u.player === playerid) {
                 if (u.currentmoves > 0 && u.skipturn === false) {
+                    dialogue.innerHTML = "You need to move your unit or skip its turn";
+                    timeoutIsGoing = false;
+                    clearTimeout(dialogueTimeout);
+                    changeUI();
                     selectUnit(u.div);
-                    console.log("hallo");
                     return;
                 }
             }
@@ -552,6 +591,7 @@ function setup() {
         //check for units that still have movement left (and have not been assigned to skip turn) before ending
 
         //actual end turn calculations
+        let endturnDialogue = "Turn ended";
         for (let u of units) {
             u.currentmoves = u.type.moves;
             u.skipturn = false;
@@ -586,6 +626,7 @@ function setup() {
                 city.pop++;
                 city.unnasigned++;
                 city.tileexpand++;
+                endturnDialogue += ", " + city.cityName + " grew and its population is now " + city.pop + ".";
                 //also make a way to expand border, 1 for each additional population
             }
 
@@ -600,7 +641,10 @@ function setup() {
                         city.storedProduction -= city.currentlyProducing.productionCost;
                         city.currentlyProducing = undefined;
                     } else {
-                        console.log("tile is occupied");
+                        dialogue.innerHTML = "The tile is occupied";
+                        timeoutIsGoing = false;
+                        clearTimeout(dialogueTimeout);
+                        changeUI();
                     }
                 } else {
                     //have built a building
@@ -613,8 +657,10 @@ function setup() {
                 city.turnsLeft = Math.ceil((city.currentlyProducing.productionCost - city.storedProduction) / city.production);
             }
         }
+        dialogue.innerHTML = endturnDialogue;
+        timeoutIsGoing = false;
+        clearTimeout(dialogueTimeout);
         changeUI();
-
         //when turn ends, calculate how much gold, science, city growth etc, will happen accros all cities
     }
 
@@ -726,7 +772,7 @@ function setup() {
                 }
             }
         } else {
-            if (focuscity !== undefined) {
+            if (focuscity !== undefined) { //hvis du selecter fra en by til en unit, blir masse tiles unselecta her
                 focuscity.div.style.opacity = 1;
                 for (let hex of manyHexInfo) {
                     if (hex.ownedByCity === focuscity.id) {
@@ -819,6 +865,9 @@ function setup() {
     let goldDiv = document.getElementById("gold");
     let scienceDiv = document.getElementById("science");
 
+    let timeoutIsGoing = false;
+    let dialogueTimeout;
+
     function changeUI(div) { //add so that when i hover over in cityui, something that has unitbuyoption or buildingbuyoption, a div gets created with some information: description, moves, vision, attack, hp etc. Since i dont have much room in UI this might be a good way to show more info
         goldDiv.innerHTML = "Gold: " + playerGold;
         scienceDiv.innerHTML = "Science: " + playerScience;
@@ -829,6 +878,14 @@ function setup() {
         cityui.style.visibility = "hidden";
         selectInfo.style.visibility = "hidden";
         uiSelected = "";
+        if (dialogue.innerHTML !== "" && !timeoutIsGoing) {
+            console.log("hallo");
+            timeoutIsGoing = true;
+            dialogueTimeout = setTimeout(function () {
+                dialogue.innerHTML = "";
+                timeoutIsGoing = false;
+            }, 3500);
+        }
         if (focuscity !== undefined) {
             div = focuscity.div;
         }
@@ -912,8 +969,12 @@ function setup() {
 
     function button1Click() {
         focusunit.skipturn = true;
-        endturn(); //maybe not always good idea to run this, but ill try and see if there are any complaints
-
+        dialogue.innerHTML = "Unit is skipping its moves this turn";
+        timeoutIsGoing = false;
+        clearTimeout(dialogueTimeout);
+        changeUI(focusunit.div);
+        //endturn(); //maybe not always good idea to run this, but ill try and see if there are any complaints
+        //i didnt like it
     }
 
     function button2Click() {
@@ -921,7 +982,10 @@ function setup() {
             if (focusunit.currentmoves > 0) {
                 createCity();
             } else {
-                console.log("u need to wait another turn");
+                dialogue.innerHTML = "You need to wait a turn first";
+                timeoutIsGoing = false;
+                clearTimeout(dialogueTimeout);
+                changeUI();
             }
         }
         /*if (uiSelected === "city") {
@@ -972,13 +1036,19 @@ function setup() {
                             createUnit(tofind, focuscity.x, focuscity.y, playerid);
                             playerGold -= tofind.productionCost;
                         } else {
-                            console.log("tile is occupied");
+                            dialogue.innerHTML = "The tile is occupied";
+                            timeoutIsGoing = false;
+                            clearTimeout(dialogueTimeout);
+                            changeUI();
                         }
                     } else {
                         //buying a building for gold
                     }
                 } else {
-                    console.log("player does not have enough money");
+                    dialogue.innerHTML = "You do not have enough money to buy this";
+                    timeoutIsGoing = false;
+                    clearTimeout(dialogueTimeout);
+                    changeUI();
                 }
             }
         }
@@ -1051,7 +1121,10 @@ function setup() {
                         justrightclicked.div.style.filter = "hue-rotate(180deg)";
                         focuscity.unnasigned--;
                     } else {
-                        console.log("no citizens");
+                        dialogue.innerHTML = "No Citizens Left";
+                        timeoutIsGoing = false;
+                        clearTimeout(dialogueTimeout);
+                        changeUI();
                     }
                 }
             } else {
