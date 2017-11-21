@@ -32,6 +32,7 @@ class hexInfo {
         this.cityBuilt; //ha id til city
         this.ownedByCity; //have id of city which owns tile, to mark it and have it availble to be worked
         this.workedByCity = false; //if you assign a citizen to work tile, its stats will be added during turn end
+        this.canBeClaimed; //give cityid as value
     }
 }
 
@@ -45,6 +46,7 @@ class unit {
         this.player = player;
         this.id = unitid;
         this.currentmoves = this.type.moves;
+        this.skipturn = false;
     }
 }
 
@@ -68,6 +70,7 @@ class city {
         this.storedFood = 0;
         this.turnsLeft;
         this.tile = tile;
+        this.tileexpand = 0;
     }
 }
 
@@ -317,11 +320,17 @@ function setup() {
             if (focusunit !== undefined && hex.canBeWalkedBy[focusunit.id] >= 0) {
                 hex.div.style.opacity = 0.5; //problemet her er at tilesa ikke finnes før du drar, kan prøve med større load radius rundt skjerm, dette tar å fikser problemet med å unloade så loade tiles som en kan gå på da
             }
-            if(focuscity !== undefined && hex.ownedByCity === focuscity.id && !hex.cityBuilt) {
-                if(hex.workedByCity) {
-                    hex.div.style.opacity = 0.1;
-                } else {
-                    hex.div.style.opacity = 0.5;
+            if (focuscity !== undefined && !hex.cityBuilt) {
+                if (hex.ownedByCity === focuscity.id) {
+                    if (hex.workedByCity) {
+                        hex.div.style.filter = "hue-rotate(180deg)";
+                    } else {
+                        hex.div.style.opacity = 0.5;
+                    }
+                }
+                if (hex.canBeClaimed === focuscity.id) {
+                    hex.div.style.filter = "invert(30%)";
+                    console.log("hallo");
                 }
             }
         }
@@ -425,7 +434,7 @@ function setup() {
         cantWalkOn: [],
         productionCost: 40,
         needsWaterTile: false,
-        uiimg: "Diverse/Triteme_(Civ5).png"
+        uiimg: "Diverse/Trireme_(Civ5).png"
     }
 
     let unitTypes = [settlerUnit, scoutUnit, boatUnit, testUnit];
@@ -486,6 +495,7 @@ function setup() {
     }
 
     document.getElementById("endturn").addEventListener("click", endturn);
+    //deselect all units & cities
     function endturn() {
         for (let n of units) {
             if (focusunit !== undefined) {
@@ -499,16 +509,53 @@ function setup() {
                 focusunit = undefined;
             }
             focustile = undefined;
-            if (focuscity !== undefined) {
-                focuscity.div.style.opacity = 1;
-                focuscity = undefined;
+        }
+        if (focuscity !== undefined) {
+            for (let hex of manyHexInfo) {
+                if (hex.ownedByCity === focuscity.id) {
+                    hex.div.style.opacity = 1;
+                    hex.div.style.filter = "hue-rotate(0deg)";
+                }
+                if (hex.canBeClaimed === focuscity.id) {
+                    if (hex.div !== undefined) {
+                        hex.div.style.filter = "invert(0%)";
+                    }
+                    hex.canBeClaimed = undefined;
+                }
             }
-            n.currentmoves = n.type.moves;
+            focuscity.div.style.opacity = 1;
+            focuscity = undefined;
+        }
+
+        //check if cities and units players control have anything unfinished
+
+        for (let city of cities) {
+            if (city.player === playerid) {
+                if (city.unnasigned > 0 || city.tileexpand > 0 || city.currentlyProducing === undefined) {
+                    selectUnit(city.div);
+                    return;
+                }
+            }
+        }
+        for (let u of units) {
+            if (u.player === playerid) {
+                if (u.currentmoves > 0 && u.skipturn === false) {
+                    selectUnit(u.div);
+                    console.log("hallo");
+                    return;
+                }
+            }
         }
         //make all deselections and ui changes nessecary (don't think any calculations need to have focusunits, tiles or cities, because it should be general, so therefore can do deselections before checks and calculations)
         //require players to select something to produce in cities before ending
         //require players to select something to research
         //check for units that still have movement left (and have not been assigned to skip turn) before ending
+
+        //actual end turn calculations
+        for (let u of units) {
+            u.currentmoves = u.type.moves;
+            u.skipturn = false;
+        }
         for (let city of cities) {
             city.production = city.pop; //give production equal to population
             city.food = - city.pop; //eat food, 1 per pop
@@ -524,7 +571,7 @@ function setup() {
                     }
                 }
             }
-            for(let building of city.buildingsBuilt) {
+            for (let building of city.buildingsBuilt) {
                 city.production += building.productionBonus;
                 city.food += building.foodBonus;
                 city.gold += building.goldBonus;
@@ -538,6 +585,7 @@ function setup() {
                 city.storedFood -= city.pop * 4;
                 city.pop++;
                 city.unnasigned++;
+                city.tileexpand++;
                 //also make a way to expand border, 1 for each additional population
             }
 
@@ -574,7 +622,12 @@ function setup() {
     //masse for loops lager mye lag, kanskje det kan kuttes ned på dem på en eller annen måte...
     border.addEventListener("click", selectUnit);
     function selectUnit(e) { // in some way use this function to make UI for different units
-        let div = e.path[0];
+        let div;
+        if (e.path !== undefined) {
+            div = e.path[0];
+        } else {
+            div = e;
+        }
         if (div.classList.contains("unit") && focusunit === undefined) {
             for (let n of units) {
                 if (div === n.div) {
@@ -655,10 +708,20 @@ function setup() {
                     focustile = hex;
                 }
                 createHexTiles(hex);
-                if (hex.ownedByCity === focuscity.id && hex.cityBuilt !== focuscity.id) {
-                    hex.div.style.opacity = 0.5;
-                    if (hex.workedByCity) {
-                        hex.div.style.opacity = 0.1; //ha en anen type style her, for eksempel grønnfarge
+                if (hex.ownedByCity === focuscity.id) {
+                    for (let hexlookfor of manyHexInfo) {
+                        if (focuscity.tileexpand > 0 && hexlookfor.ownedByCity === undefined && distance(hexlookfor.x, hexlookfor.y, hex.x, hex.y, 0, 0) <= 100 && distance(hexlookfor.x, hexlookfor.y, focuscity.x, focuscity.y, 0, 0) <= (1 + Math.floor(Math.sqrt(focuscity.pop))) * 100) {
+                            if (hexlookfor.div !== undefined) {
+                                hexlookfor.div.style.filter = "invert(20%)"; //this style means they can be claimed by city, need to right click on them to claim 
+                            }
+                            hexlookfor.canBeClaimed = focuscity.id;
+                        }
+                    }
+                    if (hex.cityBuilt !== focuscity.id) {
+                        hex.div.style.opacity = 0.5;
+                        if (hex.workedByCity) {
+                            hex.div.style.filter = "hue-rotate(180deg)"; //ha en anen type style her, for eksempel grønnfarge
+                        }
                     }
                 }
             }
@@ -668,9 +731,15 @@ function setup() {
                 for (let hex of manyHexInfo) {
                     if (hex.ownedByCity === focuscity.id) {
                         hex.div.style.opacity = 1;
+                        hex.div.style.filter = "hue-rotate(0deg)";
+                    }
+                    if (hex.canBeClaimed === focuscity.id) {
+                        if (hex.div !== undefined) {
+                            hex.div.style.filter = "invert(0%)";
+                        }
+                        hex.canBeClaimed = undefined;
                     }
                 }
-
                 focuscity = undefined;
             }
         }
@@ -681,7 +750,7 @@ function setup() {
     let uibutton1 = document.getElementById("button1");
     uibutton1.addEventListener("click", button1Click);
     let uibutton2 = document.getElementById("button2");
-    //uibutton2.addEventListener("click", button2Click);
+    uibutton2.addEventListener("click", button2Click);
     let uibutton3 = document.getElementById("button3");
     //uibutton3.addEventListener("click", button3Click);
     let uibutton4 = document.getElementById("button4");
@@ -779,11 +848,13 @@ function setup() {
         if (div.classList.contains("settler")) {
             //just selected a settler
             uiSelected = "settler";
-            button1.innerHTML = "found city";
-            uibutton1.style.visibility = "visible";
+            button2.innerHTML = "Found City";
+            uibutton2.style.visibility = "visible";
 
         }
         if (div.classList.contains("unit")) {
+            button1.innerHTML = "Skip Turn";
+            button1.style.visibility = "visible";
             selectInfo.style.visibility = "visible";
             selectInfo.innerHTML = "Moves Left: " + focusunit.currentmoves; //maybe also display health, attack etc. here
         }
@@ -822,7 +893,6 @@ function setup() {
                 unitPurchaseDiv.appendChild(newPurchaseOption);
                 if (purchaseMethod === "gold") {
                     newPurchaseOption.innerHTML = u.stringType + ": Costs " + u.productionCost + " Gold <img class='builduiimg' src=" + u.uiimg + ">";
-                    console.log(u.uiimg);
                 } else {
                     newPurchaseOption.innerHTML = u.stringType + ": Takes " + Math.ceil(u.productionCost / focuscity.production) + " turns to build <img class='builduiimg' src=" + u.uiimg + ">";
                 }
@@ -850,6 +920,12 @@ function setup() {
     }
 
     function button1Click() {
+        focusunit.skipturn = true;
+        endturn(); //maybe not always good idea to run this, but ill try and see if there are any complaints
+
+    }
+
+    function button2Click() {
         if (uiSelected === "settler") {
             if (focusunit.currentmoves > 0) {
                 createCity();
@@ -972,29 +1048,70 @@ function setup() {
             focusunit = undefined;
             focustile = undefined;
         }
-        if (focuscity !== undefined) {
+        if (focuscity !== undefined && justrightclicked !== undefined) {
             if (justrightclicked.ownedByCity === focuscity.id && justrightclicked.cityBuilt !== focuscity.id) { //right clicked a tile city owns
                 if (justrightclicked.workedByCity) { //means tile was already worked, disable it
                     justrightclicked.workedByCity = false;
-                    justrightclicked.div.style.opacity = 0.5;
+                    justrightclicked.div.style.filter = "hue-rotate(0deg)"
                     focuscity.unnasigned++;
                 } else {
                     if (focuscity.unnasigned > 0) {
                         justrightclicked.workedByCity = true;
-                        justrightclicked.div.style.opacity = 0.1;
+                        justrightclicked.div.style.filter = "hue-rotate(180deg)";
                         focuscity.unnasigned--;
                     } else {
                         console.log("no citizens");
                     }
                 }
             } else {
-                focuscity.div.style.opacity = 1; // deselect city, only want to do if tile is not controlled by city
-                for (let hex of manyHexInfo) {
-                    if (hex.ownedByCity === focuscity.id) {
-                        hex.div.style.opacity = 1;
+                if (justrightclicked.canBeClaimed === focuscity.id && focuscity.tileexpand > 0) { //also limit so that you cant expand further out than 1 + sqrt of number of citicens , so for example to exand 3 tiles out, you need minimum 4 citizens, to expand 2 tiles, you need 1, 4 tiles you need 9 etc.
+                    justrightclicked.canBeClaimed = undefined;
+                    justrightclicked.div.style.filter = "invert(0%)";
+                    justrightclicked.div.style.opacity = 0.5;
+                    justrightclicked.ownedByCity = focuscity.id;
+                    focuscity.tileexpand--;
+
+                    if (focuscity.tileexpand > 0) {
+                        for (let hex of manyHexInfo) {
+                            if (hex.ownedByCity === focuscity.id) {
+                                for (let hexlookfor of manyHexInfo) {
+                                    if (focuscity.tileexpand > 0 && hexlookfor.ownedByCity === undefined && distance(hexlookfor.x, hexlookfor.y, hex.x, hex.y, 0, 0) <= 100 && distance(hexlookfor.x, hexlookfor.y, focuscity.x, focuscity.y, 0, 0) <= (1 + Math.floor(Math.sqrt(focuscity.pop))) * 100) {
+                                        if (hexlookfor.div !== undefined) {
+                                            hexlookfor.div.style.filter = "invert(30%)";
+                                        }
+                                        hexlookfor.canBeClaimed = focuscity.id;
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        for (let hex of manyHexInfo) {
+                            if (hex.canBeClaimed === focuscity.id) {
+                                hex.canBeClaimed = undefined;
+                                if (hex.div !== undefined) {
+                                    hex.div.style.filter = "invert(0%)";
+                                }
+                            }
+                        }
                     }
+
+                    //deselect the expandtile style, if tileexpand is === 0, else, expand it to include the new tile that has been added to owned
+                } else {
+                    focuscity.div.style.opacity = 1; // deselect city, only want to do if tile is not controlled by city
+                    for (let hex of manyHexInfo) {
+                        if (hex.ownedByCity === focuscity.id) {
+                            hex.div.style.opacity = 1;
+                            hex.div.style.filter = "hue-rotate(0deg)"
+                        }
+                        if (hex.canBeClaimed === focuscity.id) {
+                            if (hex.div !== undefined) {
+                                hex.div.style.filter = "invert(0%)";
+                            }
+                            hex.canBeClaimed = undefined;
+                        }
+                    }
+                    focuscity = undefined;
                 }
-                focuscity = undefined;
             }
         }
         changeUI();
@@ -1114,7 +1231,7 @@ function setup() {
     let winLoc = document.getElementById("minimapborder");
 
     function moveMiniMapBorder() {
-        if(focuscity !== undefined) {
+        if (focuscity !== undefined) {
         }
 
         let windowWidth;
