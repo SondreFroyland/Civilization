@@ -796,7 +796,25 @@ function setup() {
         scienceBonus: 0,
         uiimg: "Diverse/Barracks.png"
     }
-    let buildingsAvailible = [aqueduct, univerity, garden, barracks];
+    let hospital = {
+        stringType: "Hospital",
+        productionCost: 55,
+        foodBonus: 6,
+        productionBonus: 0,
+        goldBonus: 0,
+        scienceBonus: 0,
+        uiimg: "Diverse/Hospital.png"
+    }
+    let library = {
+        stringType: "Library",
+        productionCost: 55,
+        foodBonus: 0,
+        productionBonus: 0,
+        goldBonus: 0,
+        scienceBonus: 2,
+        uiimg: "Diverse/Library.png"
+    }
+    let buildingsAvailible = [aqueduct, univerity, garden, barracks, hospital, library];
 
     let currentlyBuilding = document.getElementById("currentlybuilding");
 
