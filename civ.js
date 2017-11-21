@@ -807,7 +807,7 @@ function setup() {
     //ha en array med units og bygninger som kan bli kjøpt, og pushe inn i denne arrayen etterhvert som nye ting blir researcha
 
     let aqueduct = {
-        stringType: "aqueduct",
+        stringType: "Aqueduct",
         productionCost: 30,
         foodBonus: 2,
         productionBonus: 0,
@@ -816,7 +816,7 @@ function setup() {
         uiimg: "Diverse/Aqueduct.png"
     }
     let univerity = {
-        stringType: "university",
+        stringType: "University",
         productionCost: 40,
         foodBonus: 0,
         productionBonus: 0,
@@ -825,7 +825,7 @@ function setup() {
         uiimg: "Diverse/University_civ.png"
     }
     let garden = {
-        stringType: "garden",
+        stringType: "Garden",
         productionCost: 50,
         foodBonus: 3,
         productionBonus: 0,
@@ -833,7 +833,43 @@ function setup() {
         scienceBonus: 0,
         uiimg: "Diverse/Garden.png"
     }
-    let buildingsAvailible = [aqueduct, univerity, garden];
+    let barracks = {
+        stringType: "Barracks",
+        productionCost: 55,
+        foodBonus: 0,
+        productionBonus: 0,
+        goldBonus: 0,
+        scienceBonus: 0,
+        uiimg: "Diverse/Barracks.png"
+    }
+    let hospital = {
+        stringType: "Hospital",
+        productionCost: 55,
+        foodBonus: 6,
+        productionBonus: 0,
+        goldBonus: 0,
+        scienceBonus: 0,
+        uiimg: "Diverse/Hospital.png"
+    }
+    let library = {
+        stringType: "Library",
+        productionCost: 55,
+        foodBonus: 0,
+        productionBonus: 0,
+        goldBonus: 0,
+        scienceBonus: 2,
+        uiimg: "Diverse/Library.png"
+    }
+    let walls = {
+        stringType: "Walls",
+        productionCost: 55,
+        foodBonus: 0,
+        productionBonus: 0,
+        goldBonus: 0,
+        scienceBonus: 2,
+        uiimg: "Diverse/Walls.png"
+    }
+    let buildingsAvailible = [aqueduct, univerity, garden, barracks, hospital, library, walls];
 
     let currentlyBuilding = document.getElementById("currentlybuilding");
 
