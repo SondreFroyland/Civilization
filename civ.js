@@ -796,7 +796,7 @@ function setup() {
         scienceBonus: 0,
         uiimg: "Diverse/Barracks.png"
     }
-    let buildingsAvailible = [aqueduct, univerity, garden];
+    let buildingsAvailible = [aqueduct, univerity, garden, barracks];
 
     let currentlyBuilding = document.getElementById("currentlybuilding");
 
