@@ -814,7 +814,16 @@ function setup() {
         scienceBonus: 2,
         uiimg: "Diverse/Library.png"
     }
-    let buildingsAvailible = [aqueduct, univerity, garden, barracks, hospital, library];
+    let walls = {
+        stringType: "Walls",
+        productionCost: 55,
+        foodBonus: 0,
+        productionBonus: 0,
+        goldBonus: 0,
+        scienceBonus: 2,
+        uiimg: "Diverse/Walls.png"
+    }
+    let buildingsAvailible = [aqueduct, univerity, garden, barracks, hospital, library, walls];
 
     let currentlyBuilding = document.getElementById("currentlybuilding");
 
