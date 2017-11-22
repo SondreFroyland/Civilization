@@ -462,10 +462,7 @@ function setup() {
         //check if there are any cities nearby
         for (let city of cities) {
             if (distance(focustile.x, focustile.y, city.x, city.y, 0, 0) <= 400) {
-                dialogue.innerHTML = "Can't build that close to another city (Min 5 tiles apart)";
-                timeoutIsGoing = false;
-                clearTimeout(dialogueTimeout);
-                changeUI();
+                insertDialogue("Can't build that close to another city (Min 5 tiles apart)")
                 return;
             }
         }
@@ -510,6 +507,13 @@ function setup() {
 
     let dialogue = document.getElementById("dialoguebox");
 
+    function insertDialogue(a) {
+        dialogue.innerHTML = a;
+        timeoutIsGoing = false;
+        clearTimeout(dialogueTimeout);
+        changeUI();
+    }
+
     document.getElementById("endturn").addEventListener("click", endturn);
     //deselect all units & cities
     function endturn() {
@@ -523,26 +527,17 @@ function setup() {
         for (let city of cities) {
             if (city.player === playerid) {
                 if (city.currentlyProducing === undefined) {
-                    dialogue.innerHTML = "You need to choose something for the city to produce"; //kanskje ha i infobox hvor mange idle citizens
-                    timeoutIsGoing = false;
-                    clearTimeout(dialogueTimeout);
-                    changeUI();
+                    insertDialogue("You need to choose something for the city to produce"); //kanskje ha i infobox hvor mange idle citizens
                     selectUnit(city.div);
                     return;
                 }
                 if (city.tileexpand > 0) {
-                    dialogue.innerHTML = "You need to expand the city's border"; //kanskje ha i infobox hvor mange idle citizens
-                    timeoutIsGoing = false;
-                    clearTimeout(dialogueTimeout);
-                    changeUI();
+                    insertDialogue("You need to expand the city's border"); //kanskje ha i infobox hvor mange idle citizens
                     selectUnit(city.div);
                     return;
                 }
                 if (city.unnasigned > 0) {
-                    dialogue.innerHTML = "You need to assign all of the city's citizens to work on tiles"; //kanskje ha i infobox hvor mange idle citizens
-                    timeoutIsGoing = false;
-                    clearTimeout(dialogueTimeout);
-                    changeUI();
+                    insertDialogue("You need to assign all of the city's citizens to work on tiles"); //kanskje ha i infobox hvor mange idle citizens
                     selectUnit(city.div);
                     return;
                 }
@@ -551,10 +546,7 @@ function setup() {
         for (let u of units) {
             if (u.player === playerid) {
                 if (u.currentmoves > 0 && u.skipturn === false) {
-                    dialogue.innerHTML = "You need to move your unit or skip its turn";
-                    timeoutIsGoing = false;
-                    clearTimeout(dialogueTimeout);
-                    changeUI();
+                    insertDialogue("You need to move your unit or skip its turn");
                     selectUnit(u.div);
                     return;
                 }
@@ -616,10 +608,7 @@ function setup() {
                         city.storedProduction -= city.currentlyProducing.productionCost;
                         city.currentlyProducing = undefined;
                     } else {
-                        dialogue.innerHTML = "The tile is occupied";
-                        timeoutIsGoing = false;
-                        clearTimeout(dialogueTimeout);
-                        changeUI();
+                        insertDialogue("The tile is occupied");
                     }
                 } else {
                     //have built a building
@@ -632,10 +621,7 @@ function setup() {
                 city.turnsLeft = Math.ceil((city.currentlyProducing.productionCost - city.storedProduction) / city.production);
             }
         }
-        dialogue.innerHTML = endturnDialogue;
-        timeoutIsGoing = false;
-        clearTimeout(dialogueTimeout);
-        changeUI();
+        insertDialogue(endturnDialogue);
         //when turn ends, calculate how much gold, science, city growth etc, will happen accros all cities
     }
 
@@ -900,7 +886,6 @@ function setup() {
         selectInfo.style.visibility = "hidden";
         uiSelected = "";
         if (dialogue.innerHTML !== "" && !timeoutIsGoing) {
-            console.log("hallo");
             timeoutIsGoing = true;
             dialogueTimeout = setTimeout(function () {
                 dialogue.innerHTML = "";
@@ -992,10 +977,7 @@ function setup() {
 
     function button1Click() {
         focusunit.skipturn = true;
-        dialogue.innerHTML = "Unit is skipping its moves this turn";
-        timeoutIsGoing = false;
-        clearTimeout(dialogueTimeout);
-        changeUI(focusunit.div);
+        insertDialogue("Unit is skipping its moves this turn");
         //endturn(); //maybe not always good idea to run this, but ill try and see if there are any complaints
         //i didnt like it
     }
@@ -1005,10 +987,7 @@ function setup() {
             if (focusunit.currentmoves > 0) {
                 createCity();
             } else {
-                dialogue.innerHTML = "You need to wait a turn first";
-                timeoutIsGoing = false;
-                clearTimeout(dialogueTimeout);
-                changeUI();
+                insertDialogue("You need to wait a turn first");
             }
         }
         /*if (uiSelected === "city") {
@@ -1059,19 +1038,13 @@ function setup() {
                             createUnit(tofind, focuscity.x, focuscity.y, playerid);
                             playerGold -= tofind.productionCost;
                         } else {
-                            dialogue.innerHTML = "The tile is occupied";
-                            timeoutIsGoing = false;
-                            clearTimeout(dialogueTimeout);
-                            changeUI();
+                            insertDialogue("The tile is occupied");
                         }
                     } else {
                         //buying a building for gold
                     }
                 } else {
-                    dialogue.innerHTML = "You do not have enough money to buy this";
-                    timeoutIsGoing = false;
-                    clearTimeout(dialogueTimeout);
-                    changeUI();
+                    insertDialogue("You do not have enough money to buy this");
                 }
             }
         }
@@ -1085,7 +1058,6 @@ function setup() {
         if (div.classList.contains("hexTop") || div.classList.contains("hexBottom")) {
             div = e.path[1];
         }
-        console.log(div);
         e.preventDefault();
         let justrightclicked;
         for (let hex of manyHexInfo) {
@@ -1115,26 +1087,13 @@ function setup() {
                     }
                     drawMiniMap();
                 } else {
-                    dialogue.innerHTML = "That tile is occupied"; //you also get this message if clicking on the tile you stand on
-                    timeoutIsGoing = false;
-                    clearTimeout(dialogueTimeout);
-                    changeUI();
+                    insertDialogue("That tile is occupied"); //you also get this message if clicking on the tile you stand on
                 }
             } else {
-                dialogue.innerHTML = "Unit does not have enough moves left";
-                timeoutIsGoing = false;
-                clearTimeout(dialogueTimeout); //this is all the same, maybe make this into a function dialogue("string");
-                changeUI();
+                insertDialogue("Unit does not have enough moves left"); //also get this message when walking on water etc, tiles unit cant walk on
             }
 
             deselectTiles();
-            /*for (let hex of manyHexInfo) {
-                if (focusunit.player === playerid && hex.canBeWalkedBy[focusunit.id] >= 0) {
-                    hex.canBeWalkedBy[focusunit.id] = undefined;
-                    hex.div.style.opacity = 1;
-                }
-            }
-            focusunit.div.style.opacity = 1;*/
             focusunit = undefined;
             focustile = undefined;
         }
@@ -1150,20 +1109,16 @@ function setup() {
                         justrightclicked.div.style.filter = "hue-rotate(180deg)";
                         focuscity.unnasigned--;
                     } else {
-                        dialogue.innerHTML = "No Citizens Left";
-                        timeoutIsGoing = false;
-                        clearTimeout(dialogueTimeout);
-                        changeUI();
+                        insertDialogue("No Citizens Left")
                     }
                 }
             } else {
-                if (justrightclicked.canBeClaimed === focuscity.id && focuscity.tileexpand > 0) { //also limit so that you cant expand further out than 1 + sqrt of number of citicens , so for example to exand 3 tiles out, you need minimum 4 citizens, to expand 2 tiles, you need 1, 4 tiles you need 9 etc.
+                if (justrightclicked.canBeClaimed === focuscity.id && focuscity.tileexpand > 0) {
                     justrightclicked.canBeClaimed = undefined;
                     justrightclicked.div.style.filter = "invert(0%)";
                     justrightclicked.div.style.opacity = 0.5;
                     justrightclicked.ownedByCity = focuscity.id;
                     focuscity.tileexpand--;
-
                     if (focuscity.tileexpand > 0) {
                         for (let hex of manyHexInfo) {
                             if (hex.ownedByCity === focuscity.id) {
@@ -1187,10 +1142,9 @@ function setup() {
                             }
                         }
                     }
-
-                    //deselect the expandtile style, if tileexpand is === 0, else, expand it to include the new tile that has been added to owned
                 } else {
-                    focuscity.div.style.opacity = 1; // deselect city, only want to do if tile is not controlled by city
+                    deselectTiles();
+                    /*focuscity.div.style.opacity = 1;
                     for (let hex of manyHexInfo) {
                         if (hex.ownedByCity === focuscity.id) {
                             hex.div.style.opacity = 1;
@@ -1202,7 +1156,7 @@ function setup() {
                             }
                             hex.canBeClaimed = undefined;
                         }
-                    }
+                    }*/
                     focuscity = undefined;
                 }
             }
