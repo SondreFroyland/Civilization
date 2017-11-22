@@ -1,0 +1,39 @@
+     Markerer "*" på punkter med høy prioritet, "//" med ferdige punkter, markerer "-" på lette punkter med lav prioritet (Tord)
+
+     Endringslogg
+
+        Noen av disse problemene vil bli løst når vi endrer world generationen, da skal bare settleren kunne spawne på land, markerer problemer som vil bli løst av dette med "+"
+        
+        Nå er det mulig å founde byer på vann, bør ikke være mulig +
+        Bør også ikke være mulig å lage byer innenfor sånn 3-4 tiles? av hverandre altså //
+        
+        En by forsvant når jeg bevegte meg vekk //
+        
+        Bør være mulig å klikke på minimappet og komme der du trykte *
+        
+        Vindu med oversikt over units, kunne trykke på dem og så bli "teleportert" til den. (Har veldig lite plass i UI, kanskje senere, må finne ut hvordan vi kan trykke på knapper for å få opp menyer etc.)
+        
+        Ikke kunne bevege (skjermen) seg utenfor mappet der du har utforsket.
+            Dersom du alt+tab'er ut av chrome, så blar den langt vekk, dette vil bli løst dersom en ikke kan bevege seg utenfor mappet.
+        
+        Er det blitt lagt til at en unit tar den raskeste veien? //
+        
+        Ikke kunne lage byer i sjøen +
+        
+        Bruker halvparten så mange turns som anvist. //
+        
+        Gjøre slik at dersom en refresher så kommer en tilbake til samme side, og en separat knapp for å restarte. (Kan være vanskelig, men kan sikkert finne ut hvordan)
+        
+        Vise hvor mange turns du har tatt. -
+        
+        Ikke begynne med stor by, men liten. -
+            Gjøre slik at dersom du bygger en by på ørken-tile, så blir det en ørkenby, istedenfor gressby. -
+        
+        Har lastet ned mange ikoner som kan brukes i "city-screenen" som visualisering for units eller byggninger. //
+        
+        Lage borders til byer, utvides med en tile for hver population. //
+            Vise grenser med farge f.eks. (delvis, nå viser bare borders så lenge byen er selecta, men bør vise borders iallefall til enemies)
+
+        Få til basic multiplayer for å finne ut hvordan combat etc. skal fungere.
+
+DET GÅR IKKE ANN Å BYGGE TING //
