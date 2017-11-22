@@ -486,7 +486,7 @@ function setup() {
                 }
             }
         }
-        newCityName = cityNames[Math.floor(Math.random()*cityNames.length)];
+        newCityName = cityNames[Math.floor(Math.random() * cityNames.length)];
         focustile.cityBuilt = cityid;
         newCityDiv.style.left = x + "px";
         newCityDiv.style.top = y + "px";
@@ -513,41 +513,16 @@ function setup() {
     document.getElementById("endturn").addEventListener("click", endturn);
     //deselect all units & cities
     function endturn() {
-        for (let n of units) {
-            if (focusunit !== undefined) {
-                focusunit.div.style.opacity = 1;
-                for (let hex of manyHexInfo) {
-                    if (hex.canBeWalkedBy[focusunit.id] >= 0) {
-                        hex.canBeWalkedBy[focusunit.id] = undefined;
-                        hex.div.style.opacity = 1;
-                    }
-                }
-                focusunit = undefined;
-            }
-            focustile = undefined;
-        }
-        if (focuscity !== undefined) {
-            for (let hex of manyHexInfo) {
-                if (hex.ownedByCity === focuscity.id) {
-                    hex.div.style.opacity = 1;
-                    hex.div.style.filter = "hue-rotate(0deg)";
-                }
-                if (hex.canBeClaimed === focuscity.id) {
-                    if (hex.div !== undefined) {
-                        hex.div.style.filter = "invert(0%)";
-                    }
-                    hex.canBeClaimed = undefined;
-                }
-            }
-            focuscity.div.style.opacity = 1;
-            focuscity = undefined;
-        }
+        deselectTiles();
+        focusunit = undefined;
+        focustile = undefined;
+        focuscity = undefined;
 
         //check if cities and units players control have anything unfinished
 
         for (let city of cities) {
             if (city.player === playerid) {
-                if(city.currentlyProducing === undefined) {
+                if (city.currentlyProducing === undefined) {
                     dialogue.innerHTML = "You need to choose something for the city to produce"; //kanskje ha i infobox hvor mange idle citizens
                     timeoutIsGoing = false;
                     clearTimeout(dialogueTimeout);
@@ -555,7 +530,7 @@ function setup() {
                     selectUnit(city.div);
                     return;
                 }
-                if(city.tileexpand > 0) {
+                if (city.tileexpand > 0) {
                     dialogue.innerHTML = "You need to expand the city's border"; //kanskje ha i infobox hvor mange idle citizens
                     timeoutIsGoing = false;
                     clearTimeout(dialogueTimeout);
@@ -664,17 +639,47 @@ function setup() {
         //when turn ends, calculate how much gold, science, city growth etc, will happen accros all cities
     }
 
+    function deselectTiles() {
+        if (focusunit !== undefined) {
+            focusunit.div.style.opacity = 1;
+            for (let hex of manyHexInfo) {
+                if (hex.canBeWalkedBy[focusunit.id] >= 0) {
+                    hex.canBeWalkedBy[focusunit.id] = undefined;
+                    hex.div.style.opacity = 1;
+                }
+            }
+        }
+        if (focuscity !== undefined) {
+            focuscity.div.style.opacity = 1;
+            for (let hex of manyHexInfo) {
+                if (hex.ownedByCity === focuscity.id) {
+                    hex.div.style.opacity = 1;
+                    hex.div.style.filter = "hue-rotate(0deg)";
+                }
+                if (hex.canBeClaimed === focuscity.id) {
+                    if (hex.div !== undefined) {
+                        hex.div.style.filter = "invert(0%)";
+                    }
+                    hex.canBeClaimed = undefined;
+                }
+            }
+        }
+    }
+
     //kanskje legge til at du kan dra uten å fjerne selection av tiles
     //masse for loops lager mye lag, kanskje det kan kuttes ned på dem på en eller annen måte...
     border.addEventListener("click", selectUnit);
+
     function selectUnit(e) { // in some way use this function to make UI for different units
-        let div;
+        let div; //should start by deselecting (graphically) all tiles that could possivly be selected, have own function for that, deselectTiles() and also use that other places, like after end turn or right click
         if (e.path !== undefined) {
             div = e.path[0];
         } else {
             div = e;
         }
-        if (div.classList.contains("unit") && focusunit === undefined) {
+        deselectTiles();
+        focustile = undefined;
+        if (div.classList.contains("unit")) {
             for (let n of units) {
                 if (div === n.div) {
                     div.style.opacity = 0.5;
@@ -723,20 +728,12 @@ function setup() {
             }
         } else {
             if (focusunit !== undefined) {
-                for (let hex of manyHexInfo) {
-                    if (hex.canBeWalkedBy[focusunit.id] >= 0) {
-                        hex.canBeWalkedBy[focusunit.id] = undefined;
-                        hex.div.style.opacity = 1;
-                    }
-                    //burde gjøre slik at dette bare sjer med de tiles som faktisk var lyst opp på grunn av movement, ikke alle tiles på hele brettet
-                }
                 focusunit.div.style.opacity = 1;
                 focusunit = undefined;
-                focustile = undefined;
             }
-            if (div.classList.contains("unit")) {
+            /*if (div.classList.contains("unit")) {
                 selectUnit(e);
-            }
+            }*/
         }
         if (div.classList.contains("city")) { // når du velger en city, hvis do har ledige tileexpands(får en hver pop growth), lyser alle tiles rundt de byen eier, som ikke er eid av noen by allerede, og om du høyreklikker på en av disse, mister du en tilegrowth og får tilen(lyse i lilla ser jeg for meg)
             div.style.opacity = 0.8;
@@ -772,21 +769,9 @@ function setup() {
                 }
             }
         } else {
-            if (focuscity !== undefined) { //hvis du selecter fra en by til en unit, blir masse tiles unselecta her
-                focuscity.div.style.opacity = 1;
-                for (let hex of manyHexInfo) {
-                    if (hex.ownedByCity === focuscity.id) {
-                        hex.div.style.opacity = 1;
-                        hex.div.style.filter = "hue-rotate(0deg)";
-                    }
-                    if (hex.canBeClaimed === focuscity.id) {
-                        if (hex.div !== undefined) {
-                            hex.div.style.filter = "invert(0%)";
-                        }
-                        hex.canBeClaimed = undefined;
-                    }
-                }
+            if (focuscity !== undefined) {
                 focuscity = undefined;
+                //focustile = undefined; //om vi sier focustile skal bli undefined, vil den alltid bli undefined, enten i cityselect eller i unitselect. Må heller ha det slik at focustile blir undefined til å begynne med, og så uansett hva du selecter blir den defined etter det
             }
         }
         moveMiniMapBorder();
@@ -925,7 +910,9 @@ function setup() {
         if (focuscity !== undefined) {
             div = focuscity.div;
         }
-
+        if (focusunit !== undefined) {
+            div = focusunit.div;
+        }
         if (div === undefined) {
             return;
         }
@@ -1098,6 +1085,7 @@ function setup() {
         if (div.classList.contains("hexTop") || div.classList.contains("hexBottom")) {
             div = e.path[1];
         }
+        console.log(div);
         e.preventDefault();
         let justrightclicked;
         for (let hex of manyHexInfo) {
@@ -1105,43 +1093,48 @@ function setup() {
                 justrightclicked = hex;
             }
         }
-        if (focusunit !== undefined) {
-            for (let hex of manyHexInfo) { //kan forandre noe her, og bruke justrightclicked istedenfor
-                if (hex.deployed) {
-                    if (hex.canBeWalkedBy[focusunit.id] <= focusunit.currentmoves) {
-                        if (hex.x === parseFloat(div.style.left) && hex.y === parseFloat(div.style.top)) {
-                            if (!hex.occupied) {
-                                hex.occupied = true;
-                                focusunit.x = parseFloat(div.style.left);
-                                focusunit.y = parseFloat(div.style.top);
-                                focusunit.div.style.left = focusunit.x + "px";
-                                focusunit.div.style.top = focusunit.y + "px";
-                                //reducing currentmoves based on distance traveled
-                                focusunit.currentmoves -= hex.canBeWalkedBy[focusunit.id];
+        if (focusunit !== undefined && justrightclicked !== undefined) {
+            if (justrightclicked.canBeWalkedBy[focusunit.id] <= focusunit.currentmoves) {
+                if (!justrightclicked.occupied) {
+                    justrightclicked.occupied = true;
+                    focusunit.x = parseFloat(div.style.left);
+                    focusunit.y = parseFloat(div.style.top);
+                    focusunit.div.style.left = focusunit.x + "px";
+                    focusunit.div.style.top = focusunit.y + "px";
+                    //reducing currentmoves based on distance traveled
+                    focusunit.currentmoves -= justrightclicked.canBeWalkedBy[focusunit.id];
 
-                                for (let hexDiscover of manyHexInfo) {
-                                    if (!hexDiscover.deployed && distance(focusunit.x, focusunit.y, hexDiscover.x, hexDiscover.y, 0, 0) <= (focusunit.type.vision) * 100) {
-                                        hexDiscover.discovererd[playerid] = true;
-                                        createHexTiles(hexDiscover);
-                                    }
-                                    if (hexDiscover.x === focustile.x && hexDiscover.y === focustile.y) {
-                                        hexDiscover.occupied = false;
-                                    }
-                                }
-                                drawMiniMap();
-                            }
+                    for (let hexDiscover of manyHexInfo) {
+                        if (!hexDiscover.deployed && distance(focusunit.x, focusunit.y, hexDiscover.x, hexDiscover.y, 0, 0) <= (focusunit.type.vision) * 100) {
+                            hexDiscover.discovererd[playerid] = true;
+                            createHexTiles(hexDiscover);
+                        }
+                        if (hexDiscover.x === focustile.x && hexDiscover.y === focustile.y) {
+                            hexDiscover.occupied = false;
                         }
                     }
+                    drawMiniMap();
+                } else {
+                    dialogue.innerHTML = "That tile is occupied"; //you also get this message if clicking on the tile you stand on
+                    timeoutIsGoing = false;
+                    clearTimeout(dialogueTimeout);
+                    changeUI();
                 }
-
+            } else {
+                dialogue.innerHTML = "Unit does not have enough moves left";
+                timeoutIsGoing = false;
+                clearTimeout(dialogueTimeout); //this is all the same, maybe make this into a function dialogue("string");
+                changeUI();
             }
-            for (let hex of manyHexInfo) {
+
+            deselectTiles();
+            /*for (let hex of manyHexInfo) {
                 if (focusunit.player === playerid && hex.canBeWalkedBy[focusunit.id] >= 0) {
                     hex.canBeWalkedBy[focusunit.id] = undefined;
                     hex.div.style.opacity = 1;
                 }
             }
-            focusunit.div.style.opacity = 1;
+            focusunit.div.style.opacity = 1;*/
             focusunit = undefined;
             focustile = undefined;
         }
