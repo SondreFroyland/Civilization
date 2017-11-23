@@ -147,7 +147,7 @@ function setup() {
         food: 0,
         production: 2,
         gold: 0,
-        science: 0
+        science: 1
     }
     let hexSkog = {
         class: "skog",
@@ -537,6 +537,9 @@ function setup() {
     }
 
     document.getElementById("endturn").addEventListener("click", endturn);
+
+    let turncounter = 0;
+
     //deselect all units & cities
     function endturn() {
         deselectTiles();
@@ -580,6 +583,11 @@ function setup() {
         //check for units that still have movement left (and have not been assigned to skip turn) before ending
 
         //actual end turn calculations
+
+        
+        turncounter++;
+        document.getElementById("endturnCount").innerHTML = "Turn: " + turncounter;
+
         let endturnDialogue = "Turn ended";
         for (let u of units) {
             u.currentmoves = u.type.moves;
@@ -904,8 +912,8 @@ function setup() {
     let dialogueTimeout;
 
     function changeUI(div) { //add so that when i hover over in cityui, something that has unitbuyoption or buildingbuyoption, a div gets created with some information: description, moves, vision, attack, hp etc. Since i dont have much room in UI this might be a good way to show more info
-        goldDiv.innerHTML = "Gold: " + playerGold;
-        scienceDiv.innerHTML = "Science: " + playerScience;
+        goldDiv.innerHTML = "<img src=Diverse/Currency.png id='goldicon'> "+ playerGold;
+        scienceDiv.innerHTML = "<img src=Diverse/Science.png id='scienceicon'> " + playerScience;
         uibutton1.style.visibility = "hidden";
         uibutton2.style.visibility = "hidden";
         uibutton3.style.visibility = "hidden";
@@ -946,7 +954,7 @@ function setup() {
             //just selected a city
             uiSelected = "city";
             selectInfo.style.visibility = "visible";
-            selectInfo.innerHTML = "Stored Production: " + focuscity.storedProduction + "<br> Population: " + focuscity.pop + "<br> Stored Food: " + focuscity.storedFood;
+            selectInfo.innerHTML = "<img src=Diverse/Production.png id='productionicon'> " + focuscity.storedProduction + "<br> <img src=Diverse/population.png id='populationicon'> " + focuscity.pop + "<br> <img src=Diverse/Food.png id='goldicon'> " + focuscity.storedFood;
 
             while (unitPurchaseDiv.lastChild !== unitHeaderDiv) {
                 unitPurchaseDiv.removeChild(unitPurchaseDiv.lastChild);

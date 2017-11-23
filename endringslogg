@@ -1,0 +1,35 @@
+Endringslogg
+        
+        Nå er det mulig å founde byer på vann, bør ikke være mulig
+        Bør også ikke være mulig å lage byer innenfor sånn 3-4 tiles? av hverandre altså
+        
+        En by forsvant når jeg bevegte meg vekk
+        
+        Bør være mulig å klikke på minimappet og komme der du trykte
+        
+        Vindu med oversikt over units, kunne trykke på dem og så bli "teleportert" til den.
+        
+        Ikke kunne bevege seg utenfor mappet der du har utforsket.
+            Dersom du alt+tab'er ut av chrome, så blar den langt vekk, 
+            dette vil bli løst dersom en ikke kan bevege seg utenfor mappet.
+        
+      //  Er det blitt lagt til at en unit tar den raskeste veien?
+        
+        Ikke kunne lage byer i sjøen
+        
+        Gjøre slik at dersom en refresher så kommer en tilbake til samme side, og en separat knapp for å restarte.
+        
+      //  Vise hvor mange turns du har tatt.
+        
+        Ikke begynne med stor by, men liten.
+            Gjøre slik at dersom du bygger en by på ørken-tile, så blir det en ørkenby, istedenfor gressby.
+        
+        Har lastet ned mange ikoner som kan brukes i "city-screenen" som visualisering for units eller byggninger.
+        
+        Lage borders til byer, utvides med en tile for hver population.
+            Vise grenser med farge f.eks.
+
+       // DET GÅR IKKE ANN Å BYGGE TING
+
+       Må lage loginscreen, bruk photoshop som grunnleggende, åså html og css.
+            Etter loginscreen så kommer du til hvor du kan velge nation.
