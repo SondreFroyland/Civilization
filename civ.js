@@ -147,7 +147,7 @@ function setup() {
         food: 0,
         production: 2,
         gold: 0,
-        science: 0
+        science: 1
     }
     let hexSkog = {
         class: "skog",
@@ -515,6 +515,9 @@ function setup() {
     }
 
     document.getElementById("endturn").addEventListener("click", endturn);
+
+    let turncounter = 0;
+
     //deselect all units & cities
     function endturn() {
         deselectTiles();
@@ -558,6 +561,11 @@ function setup() {
         //check for units that still have movement left (and have not been assigned to skip turn) before ending
 
         //actual end turn calculations
+
+        
+        turncounter++;
+        document.getElementById("endturnCount").innerHTML = "Turn: " + turncounter;
+
         let endturnDialogue = "Turn ended";
         for (let u of units) {
             u.currentmoves = u.type.moves;
