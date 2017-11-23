@@ -926,7 +926,7 @@ function setup() {
             //just selected a city
             uiSelected = "city";
             selectInfo.style.visibility = "visible";
-            selectInfo.innerHTML = "Stored Production: " + focuscity.storedProduction + "<br> Population: " + focuscity.pop + "<br> <img src=Diverse/Food.png id='goldicon'> " + focuscity.storedFood;
+            selectInfo.innerHTML = "<img src=Diverse/Production.png id='productionicon'> " + focuscity.storedProduction + "<br> <img src=Diverse/population.png id='populationicon'> " + focuscity.pop + "<br> <img src=Diverse/Food.png id='goldicon'> " + focuscity.storedFood;
 
             while (unitPurchaseDiv.lastChild !== unitHeaderDiv) {
                 unitPurchaseDiv.removeChild(unitPurchaseDiv.lastChild);

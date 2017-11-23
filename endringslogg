@@ -13,13 +13,13 @@ Endringslogg
             Dersom du alt+tab'er ut av chrome, så blar den langt vekk, 
             dette vil bli løst dersom en ikke kan bevege seg utenfor mappet.
         
-        Er det blitt lagt til at en unit tar den raskeste veien?
+      //  Er det blitt lagt til at en unit tar den raskeste veien?
         
         Ikke kunne lage byer i sjøen
         
         Gjøre slik at dersom en refresher så kommer en tilbake til samme side, og en separat knapp for å restarte.
         
-        Vise hvor mange turns du har tatt.
+      //  Vise hvor mange turns du har tatt.
         
         Ikke begynne med stor by, men liten.
             Gjøre slik at dersom du bygger en by på ørken-tile, så blir det en ørkenby, istedenfor gressby.
@@ -29,4 +29,7 @@ Endringslogg
         Lage borders til byer, utvides med en tile for hver population.
             Vise grenser med farge f.eks.
 
-        DET GÅR IKKE ANN Å BYGGE TING
+       // DET GÅR IKKE ANN Å BYGGE TING
+
+       Må lage loginscreen, bruk photoshop som grunnleggende, åså html og css.
+            Etter loginscreen så kommer du til hvor du kan velge nation.
