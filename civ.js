@@ -178,6 +178,22 @@ function setup() {
     let intervalXDirection = "";
     let intervalYDirection = "";
 
+    function triedMovingOffScreen() {
+        //preventing screen going off discovered map
+        if(-screenXPos < minX - 100) { //-100 is the little bit of extra space you get
+            screenXPos = -(minX - 100)
+        }
+        if(-screenXPos > (maxX + 100) + 100 - 800) { //+100 is the width of the tile, -800 is the height of the screen
+            screenXPos = -((maxX + 100) + 100 - 800);
+        }
+        if (-screenYPos < minY - 100 + 18) { //18 in some way the height of the top triangle of hextile, makes the offset in y direction equal both up and down
+            screenYPos = -(minY - 100 + 18);
+        }
+        if (-screenYPos > (maxY + 100) + 100 - 550) {
+            screenYPos = -((maxY + 100) + 100 - 550); //550 is the height of the screen, 100 is the height of the hextile
+        }
+    }
+
     let border = document.getElementById("border");
     border.addEventListener("mousemove", flytt);
 
@@ -186,6 +202,9 @@ function setup() {
         if (e.buttons === 1) {
             screenXPos = screenXPos + 2 * e.movementX;
             screenYPos = screenYPos + 2 * e.movementY;
+
+            triedMovingOffScreen();
+
             playField.style.left = screenXPos + "px";
             playField.style.top = screenYPos + "px";
             for (let hex of manyHexInfo) {
@@ -265,6 +284,9 @@ function setup() {
                 screenYPos -= 16;
                 break;
         }
+
+        triedMovingOffScreen();
+
         playField.style.left = screenXPos + "px";
         playField.style.top = screenYPos + "px";
         for (let hex of manyHexInfo) {
@@ -672,6 +694,9 @@ function setup() {
                     focusunit = n;
                     screenXPos = -focusunit.x + 800 / 2 - 100 / 2;
                     screenYPos = -focusunit.y + 550 / 2 - 120 / 2;
+
+                    //triedMovingOffScreen();
+
                     playField.style.left = screenXPos + "px";
                     playField.style.top = screenYPos + "px";
                     let searchingTiles = [];
@@ -728,6 +753,9 @@ function setup() {
                     focuscity = n;
                     screenXPos = -focuscity.x + 800 / 2 - 100 / 2;
                     screenYPos = -focuscity.y + 550 / 2 - 120 / 2;
+
+                    //triedMovingOffScreen();
+
                     playField.style.left = screenXPos + "px";
                     playField.style.top = screenYPos + "px";
                 }
@@ -1169,6 +1197,7 @@ function setup() {
     createUnit(testUnit, 500, 172, playerid);*/
 
     //using canvas to create minimap
+    let canvasdiv = document.getElementById("canvasdiv");
     let canvas = document.getElementById("minimap");
     let ctx = canvas.getContext("2d");
 
@@ -1192,6 +1221,39 @@ function setup() {
 
     let antallTilesX;
     let antallTilesY;
+
+    canvasdiv.addEventListener("click", miniMapClick);
+    canvasdiv.addEventListener("mousemove", miniMapClick);
+
+    function miniMapClick(e) {
+        if (e.buttons === 1) {
+            //e.clientX - 950, e.clientY - 20
+            if (canvasDrawDir === "x") {
+                screenXPos = -(e.clientX - 950) * canW / 300 - minX + 400;
+                screenYPos = -(e.clientY - 20 - yReferenceLine) * canH / yHeight - minY + 275;
+            } else {
+                screenXPos = -(e.clientX - 950 - xReferenceLine) * canW / xHeight - minX + 400;
+                screenYPos = -(e.clientY - 20) * canH / 300 - minY + 275;
+            }
+
+            triedMovingOffScreen();
+
+            playField.style.left = screenXPos + "px";
+            playField.style.top = screenYPos + "px";
+
+            for (let hex of manyHexInfo) {
+                if (hex.deployed) {
+                    if ((hex.x + screenXPos) < -330 || (hex.x + screenXPos) > 1120 || (hex.y + screenYPos) < -340 || (hex.y + screenYPos) > 820) {
+                        hex.deployed = false;
+                        hex.div.remove();
+                    }
+                }
+                createHexTiles(hex);
+            }
+            moveMiniMapBorder();
+        }
+
+    }
 
     function drawMiniMap() {
         canvasTiles = [];
