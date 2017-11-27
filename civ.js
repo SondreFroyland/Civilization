@@ -19,6 +19,8 @@ myr etc, og etterpå spawner players til høyre for fjell
 TODO: Add canvas for map display based on what hextiles are discovered
 */
 
+//https://www.npmjs.com/package/random-seed seed based rng
+
 
 class hexInfo {
     constructor(x, y, hexType) {

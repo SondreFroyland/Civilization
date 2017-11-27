@@ -40,16 +40,18 @@
         <button type="button" id="endturn" onClick="endturn()">End turn</button>
         <div id="endturnCount">Turn: 0</div>
         <div>
-        <div id="border">
-            <div id="playField">
+            <div id="border">
+                <div id="playField">
+                </div>
+            </div>
+            <div id="canvasdiv">
+                <div id="minimapborder"></div>
+                <canvas id="minimap" width="300" height="300"></canvas>
             </div>
         </div>
-        <div id="canvasdiv">
-            <div id="minimapborder"></div>
-            <canvas id="minimap" width="300" height="300"></canvas>
-        </div>
-    </div>
-    <script>
-        setup();
-    </script>
+        <script>
+            setup();
+        </script>
 </body>
+
+</html>
