@@ -1134,7 +1134,8 @@ function setup() {
             focustile = undefined;
         }
         if (focuscity !== undefined && justrightclicked !== undefined) {
-            if (justrightclicked.ownedByCity === focuscity.id && justrightclicked.cityBuilt !== focuscity.id) { //right clicked a tile city owns
+            if (justrightclicked.ownedByCity === focuscity.id && justrightclicked.cityBuilt
+                 !== focuscity.id) { //right clicked a tile city owns
                 if (justrightclicked.workedByCity) { //means tile was already worked, disable it
                     justrightclicked.workedByCity = false;
                     justrightclicked.div.style.filter = "hue-rotate(0deg)"
