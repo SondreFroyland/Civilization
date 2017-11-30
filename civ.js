@@ -182,10 +182,10 @@ function setup() {
 
     function triedMovingOffScreen() {
         //preventing screen going off discovered map
-        if(-screenXPos < minX - 100) { //-100 is the little bit of extra space you get
+        if (-screenXPos < minX - 100) { //-100 is the little bit of extra space you get
             screenXPos = -(minX - 100)
         }
-        if(-screenXPos > (maxX + 100) + 100 - 800) { //+100 is the width of the tile, -800 is the height of the screen
+        if (-screenXPos > (maxX + 100) + 100 - 800) { //+100 is the width of the tile, -800 is the height of the screen
             screenXPos = -((maxX + 100) + 100 - 800);
         }
         if (-screenYPos < minY - 100 + 18) { //18 in some way the height of the top triangle of hextile, makes the offset in y direction equal both up and down
@@ -572,7 +572,7 @@ function setup() {
         }
         for (let u of units) {
             if (u.player === playerid) {
-                if (u.currentmoves > 0 && u.skipturn === false) {
+                if (u.currentmoves > 0 && u.skipturn === false) { //if it has moves left, but cant go anywhere (surrounded by forest with just 1 move left, skipturn is automatically turned true)
                     insertDialogue("You need to move your unit or skip its turn");
                     selectUnit(u.div);
                     return;
@@ -586,7 +586,7 @@ function setup() {
 
         //actual end turn calculations
 
-        
+
         turncounter++;
         document.getElementById("endturnCount").innerHTML = "Turn: " + turncounter;
 
@@ -914,7 +914,7 @@ function setup() {
     let dialogueTimeout;
 
     function changeUI(div) { //add so that when i hover over in cityui, something that has unitbuyoption or buildingbuyoption, a div gets created with some information: description, moves, vision, attack, hp etc. Since i dont have much room in UI this might be a good way to show more info
-        goldDiv.innerHTML = "<img src=Diverse/Currency.png id='goldicon'> "+ playerGold;
+        goldDiv.innerHTML = "<img src=Diverse/Currency.png id='goldicon'> " + playerGold;
         scienceDiv.innerHTML = "<img src=Diverse/Science.png id='scienceicon'> " + playerScience;
         uibutton1.style.visibility = "hidden";
         uibutton2.style.visibility = "hidden";
