@@ -366,13 +366,18 @@ function setup() {
 
     let cities = [];
 
+    let rr = Math.random; //at end of world gen, set it back to the previous function.
+
+    let seed = "healooe";
+    Math.seedrandom(seed);
+
     function createTile(i, j) {
 
         let xpos = 0;
         let ypos = 0;
 
         ypos = i * 86;
-        if (i / 2 === Math.ceil(i / 2)) {
+        if (i % 2 === 0) {
             xpos = j * 100;
         } else {
             xpos = j * 100 + 50;
@@ -388,6 +393,8 @@ function setup() {
         }
     }
     generateWorld();
+
+
 
     function distance(ax, ay, bx, by, xscew, yscew) {
         let dist = Math.sqrt((ax - bx + xscew) * (ax - bx + xscew) + (ay - by + yscew) * (ay - by + yscew));
@@ -1137,7 +1144,7 @@ function setup() {
         }
         if (focuscity !== undefined && justrightclicked !== undefined) {
             if (justrightclicked.ownedByCity === focuscity.id && justrightclicked.cityBuilt
-                 !== focuscity.id) { //right clicked a tile city owns
+                !== focuscity.id) { //right clicked a tile city owns
                 if (justrightclicked.workedByCity) { //means tile was already worked, disable it
                     justrightclicked.workedByCity = false;
                     justrightclicked.div.style.filter = "hue-rotate(0deg)"
